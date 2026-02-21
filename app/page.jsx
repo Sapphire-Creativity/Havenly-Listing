@@ -5,6 +5,7 @@ import PropertyLocations from "./components/PropertyLocations";
 import ExploreLocations from "./components/ExploreLocations";
 import TrendingSection from "./components/TrendingSection";
 import GeometricMapUI from "./components/GeometricMapUI";
+import ListPropertyCTA from "./components/ListPropertyCTA";
 
 const page = () => {
   const propertyLocation = [
@@ -23,6 +24,7 @@ const page = () => {
 
       <TrendingSection />
       <GeometricMapUI />
+      <ListPropertyCTA/>
     </>
   );
 };

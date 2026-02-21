@@ -68,19 +68,19 @@ h4,
 h5,
 h6 {
   font-family: var(--font-heading);
-  font-weight: 700;
+  font-weight: 800;
   margin: 0;
 }
 
 section {
   width: 100%;
   position: relative;
-  padding: 6rem 3rem;
+  padding: 6rem 5rem;
 }
 
 @media (min-width: 640px) {
   section {
-    padding: 5rem 2rem;
+    padding: 5rem 1rem;
   }
 }
 

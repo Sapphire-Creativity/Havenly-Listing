@@ -2,18 +2,44 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { FiMenu, FiX, FiHome, FiBriefcase, FiLogIn } from "react-icons/fi";
+import {
+  FiMenu,
+  FiX,
+  FiHome,
+  FiBriefcase,
+  FiLogIn,
+  FiLogOut,
+  FiUser,
+} from "react-icons/fi";
 import { HiOutlineBuildingOffice2 } from "react-icons/hi2";
 import { TbBuildingEstate } from "react-icons/tb";
 import { MdOutlineRealEstateAgent } from "react-icons/md";
+import { useClerk, useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  const { signOut } = useClerk();
+  const { user, isSignedIn, isLoaded } = useUser();
+  const router = useRouter();
+
+  const role = user?.unsafeMetadata?.role;
+
+  const handleSignOut = async () => {
+    await signOut();
+    window.location.replace("/auth/login");
+  };
+
+  const dashboardHref =
+    role === "owner"
+      ? "/propertyowner/owner-dashboard"
+      : "/client/client-dashboard";
+
   const navLinks = [
     { name: "Home", href: "/", icon: <FiHome className="w-5 h-5" /> },
-    
+
     {
       name: "Buy",
       href: "/buy",
@@ -40,7 +66,7 @@ export default function Navbar() {
   // }, []);
 
   return (
-    <nav className="sticky top-0 z-90 transition-all duration-300 bg-white ">
+    <nav className="sticky top-0 z-90 transition-all duration-300 bg-white py-4 ">
       <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo with animation */}
@@ -57,12 +83,12 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-1">
+          <div className="hidden lg:flex items-center justify-between  space-x-3">
             {navLinks.map((link) => (
               <Link
                 key={link.name}
                 href={link.href}
-                className="group relative px-4 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200"
+                className="group relative px-4 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 "
               >
                 <div className="flex items-center space-x-2">
                   {link.icon}
@@ -76,23 +102,63 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Buttons */}
-          <div className="hidden lg:flex items-center space-x-4">
-            <button className="group relative px-6 py-2.5 rounded-full bg-linear-to-r from-primary-accent to-primary text-white font-medium overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary-accent/25">
-              <span className="relative z-10">List Property</span>
-              <div className="absolute inset-0 bg-linear-to-r from-primary-accent to-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-            </button>
 
-            <button className="group flex items-center space-x-2 px-6 py-2.5 rounded-full border-2 border-gray-300 text-gray-700 font-medium transition-all duration-300 hover:border-primary-accent hover:text-primary-accent hover:shadow-md">
-              <FiLogIn className="w-4 h-4" />
-              <span>Sign In</span>
-            </button>
+          <div className="hidden lg:flex items-center space-x-4">
+            {!isLoaded ? null : isSignedIn ? (
+              <>
+                <>
+                  <Link
+                    href={dashboardHref}
+                    className="group flex items-center space-x-2 px-5 py-3 rounded-full border-2 border-gray-300 text-gray-700 font-medium transition-all duration-300 hover:border-primary-accent hover:text-primary-accent hover:shadow-md"
+                  >
+                    <FiUser className="w-4 h-4" />
+                    <span>Dashboard</span>
+                  </Link>
+
+                  <button
+                    onClick={handleSignOut}
+                    className="group flex items-center space-x-2 px-7 py-3 rounded-full bg-linear-to-r from-primary-accent to-primary text-white font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary-accent/25"
+                  >
+                    <FiLogOut className="w-4 h-4" />
+                    <span>Sign Out</span>
+                  </button>
+                </>
+              </>
+            ) : (
+              <>
+                <button className="group relative px-7 py-3 rounded-full bg-linear-to-r from-primary-accent to-primary text-white font-medium overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary-accent/25">
+                  <span className="relative z-10">List Property</span>
+                </button>
+
+                <Link
+                  href="/auth/signup/"
+                  className="group flex items-center space-x-2 px-7 py-3 rounded-full border-2 border-gray-300 text-gray-700 font-medium transition-all duration-300 hover:border-primary-accent hover:text-primary-accent hover:shadow-md"
+                >
+                  <FiLogIn className="w-4 h-4" />
+                  <span>Sign In</span>
+                </Link>
+              </>
+            )}
           </div>
 
-          {/* Mobile Sign In Button */}
-          <button className="lg:hidden group flex items-center space-x-2 px-4 py-2 rounded-full border border-gray-300 text-gray-700 font-medium transition-all duration-300 hover:border-primary-accent hover:text-primary-accent">
-            <FiLogIn className="w-4 h-4" />
-            <span className="hidden sm:inline">Sign In</span>
-          </button>
+          {/* Mobile Sign In / Out Button */}
+          {isSignedIn ? (
+            <button
+              onClick={handleSignOut}
+              className="lg:hidden group flex items-center space-x-2 px-4 py-2 rounded-full border border-gray-300 text-gray-700 font-medium transition-all duration-300 hover:border-primary-accent hover:text-primary-accent"
+            >
+              <FiLogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+          ) : (
+            <Link
+              href="/auth/signup/"
+              className="lg:hidden group flex items-center space-x-2 px-4 py-2 rounded-full border border-gray-300 text-gray-700 font-medium transition-all duration-300 hover:border-primary-accent hover:text-primary-accent"
+            >
+              <FiLogIn className="w-4 h-4" />
+              <span className="hidden sm:inline">Sign In</span>
+            </Link>
+          )}
 
           {/* Toggle Button */}
           <button

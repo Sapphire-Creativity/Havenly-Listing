@@ -2,9 +2,10 @@
 
 import React, { useMemo, useState } from "react";
 import { ALL_PROPERTIES } from "../../public/assets/data";
-import PropertyForBuyCard from "../components/PropertyForBuyCard";
+import PropertyForBuyCard from "../components/PropertyCard";
 import SearchBar from "../components/SearchBar";
 import { useRouter } from "next/navigation";
+import PropertyCard from "../components/PropertyCard";
 
 const Buy = () => {
   const [filter, setFilter] = useState("Residential");
@@ -14,13 +15,27 @@ const Buy = () => {
 
   const filteredProperties = useMemo(() => {
     let data = ALL_PROPERTIES.filter(
-      (property) => property.propertyCategory === filter
+      (property) => property.status === "For Sale",
+    );
+
+    // filter by category
+
+    data = data.filter(
+      (property) =>
+        property.propertyCategory?.toLocaleLowerCase().trim() ===
+        filter.toLowerCase().trim(),
     );
 
     if (sort === "price-low") {
-      data = [...data].sort((a, b) => a.price - b.price);
-    } else if (sort === "price-high") {
-      data = [...data].sort((a, b) => b.price - a.price);
+      data = data.sort((a, b) => a.pricing.salePrice - b.pricing.salePrice);
+    }
+    if (sort === "price-high") {
+      data = data.sort((a, b) => b.pricing.salePrice - a.pricing.salePrice);
+    }
+    if (sort === "latest") {
+      data = data.sort(
+        (a, b) => new Date(b.dateListed) - new Date(a.dateListed),
+      );
     }
 
     return data;
@@ -109,13 +124,14 @@ const Buy = () => {
           </div>
         </div>
 
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 2xl:grid-cols-2 3xl:grid-cols-3">
           {filteredProperties.length > 0 ? (
             filteredProperties.map((property) => (
-              <PropertyForBuyCard
+              <PropertyCard
                 key={property.id}
                 property={property}
                 handleCardClick={handleCardClick}
+                listingType="buy"
               />
             ))
           ) : (

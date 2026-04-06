@@ -1,11 +1,11 @@
 import React from "react";
-import Hero from "./components/Hero";
-import SearchBar from "./components/SearchBar";
-import PropertyLocations from "./components/PropertyLocations";
-import ExploreLocations from "./components/ExploreLocations";
-import TrendingSection from "./components/TrendingSection";
-import GeometricMapUI from "./components/GeometricMapUI";
-import ListPropertyCTA from "./components/ListPropertyCTA";
+  import ExploreLocations from "./(public)/components/ExploreLocations";
+import TrendingSection from "./(public)/components/TrendingSection";
+import GeometricMapUI from "./(public)/components/GeometricMapUI";
+import ListPropertyCTA from "./(public)/components/ListPropertyCTA";
+import SearchBar from "./(public)/components/SearchBar";
+import Hero from "./(public)/components/Hero";
+ 
 
 const page = () => {
   const propertyLocation = [

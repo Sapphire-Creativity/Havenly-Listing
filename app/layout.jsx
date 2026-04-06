@@ -1,8 +1,7 @@
 import { Inter, Nunito } from "next/font/google";
 import "./globals.css";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
 import { ClerkProvider } from "@clerk/nextjs";
+import StoreProvider from "../store/StoreProvider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 const nunito = Nunito({ subsets: ["latin"], variable: "--font-nunito" });
@@ -17,9 +16,9 @@ export default function RootLayout({ children }) {
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body className={`${inter.variable} ${nunito.variable} antialiased`}>
-          <Navbar />
-          <main>{children} </main>
-          <Footer />
+          <StoreProvider>
+            <main>{children} </main>
+          </StoreProvider>
         </body>
       </html>
     </ClerkProvider>

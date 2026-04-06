@@ -3,7 +3,8 @@ import { z } from "zod";
 export const signupSchema = z.object({
   role: z.enum(["client", "owner"]),
   businessName: z.string().min(2, "Business name is required").optional(),
-  fullName: z.string().min(3, "Full name is required"),
+  firstName: z.string().min(3, "First name is required"),
+  lastName: z.string().min(3, "Last name is required"),
   email: z.string().email("Invalid email address"),
   phone: z
     .string()

@@ -78,14 +78,38 @@ section {
   padding: 6rem 5rem;
 }
 
+
+section {
+  width: 100%;
+  position: relative;
+  padding: 2rem 1rem;
+}
+
+/* Small screens (sm: 640px and up) */
 @media (min-width: 640px) {
   section {
-    padding: 5rem 1rem;
+    padding: 3rem 1.5rem;
   }
 }
 
-@media (min-width: 1024px) {
+/* Medium screens (md: 768px and up) */
+@media (min-width: 768px) {
   section {
-    padding: 6rem 3rem;
+    padding: 4rem 2rem;
   }
 }
+
+/* Large screens (lg: 1024px and up) */
+@media (min-width: 1024px) {
+  section {
+    padding: 5rem 3rem;
+  }
+}
+
+/* Extra large screens (xl: 1280px and up) */
+@media (min-width: 1280px) {
+  section {
+    padding: 6rem 5rem;
+  }
+}
+ 

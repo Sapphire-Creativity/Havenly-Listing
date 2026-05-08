@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSignIn, useSignUp } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -7,33 +8,27 @@ import { useSearchParams } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
-export default function VerifyEmail() {
+// 👇 Move everything into a separate inner component
+function VerifyEmailContent() {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { signUp, setActive, isLoaded } = useSignUp();
-
   const [message, setMessage] = useState("");
   const [resending, setResending] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams(); // ✅ safe inside Suspense
 
   useEffect(() => {
     if (!isLoaded) return;
-
-    console.log("SignUp status:", signUp?.status);
-
-    // Only redirect if there is truly NO signup in progress
     if (signUp.status === "idle") {
       router.push("/auth/signup");
     }
   }, [isLoaded, signUp?.status, router]);
 
-  //
   const verifyCode = async (e) => {
     e.preventDefault();
     if (!isLoaded) return;
-
     setLoading(true);
     setError("");
     setMessage("");
@@ -41,16 +36,12 @@ export default function VerifyEmail() {
       const result = await signUp.attemptEmailAddressVerification({
         code: code.trim(),
       });
-
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-
-        // Carry redirect_url forward to auth/redirect
         const redirectUrl = searchParams.get("redirect_url");
         const destination = redirectUrl
           ? `/auth/redirect?redirect_url=${redirectUrl}`
           : "/auth/redirect";
-
         window.location.replace(destination);
       }
     } catch (err) {
@@ -66,12 +57,8 @@ export default function VerifyEmail() {
     setResending(true);
     setError("");
     setMessage("");
-
     try {
-      await signUp.prepareEmailAddressVerification({
-        strategy: "email_code",
-      });
-
+      await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
       setMessage("A new code has been sent to your email.");
     } catch (err) {
       setError("Failed to resend code. Try again.");
@@ -83,24 +70,19 @@ export default function VerifyEmail() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
-        {/* Icon */}
         <div className="flex justify-center mb-4">
           <div className="w-16 h-16 flex items-center justify-center rounded-full bg-orange-100 text-orange-600 text-2xl font-bold">
             ✉️
           </div>
         </div>
-
-        {/* Title */}
         <h1 className="text-2xl font-bold text-center text-gray-800">
           Verify your email
         </h1>
         <p className="text-center text-gray-500 mt-2 text-sm">
-          We’ve sent a 6-digit verification code to your email. Enter it below
+          We've sent a 6-digit verification code to your email. Enter it below
           to confirm your account.
         </p>
-
         <form onSubmit={verifyCode}>
-          {/* Input */}
           <div className="mt-6">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Verification code
@@ -114,14 +96,8 @@ export default function VerifyEmail() {
               className="w-full px-4 py-3 border rounded-lg outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 text-center tracking-widest text-lg"
             />
           </div>
-          {error && (
-            <p className="text-red-600 text-sm mt-2 text-center">{error}</p>
-          )}
-          {message && (
-            <p className="text-green-600 text-sm mt-2 text-center">{message}</p>
-          )}
-
-          {/* Button */}
+          {error && <p className="text-red-600 text-sm mt-2 text-center">{error}</p>}
+          {message && <p className="text-green-600 text-sm mt-2 text-center">{message}</p>}
           <button
             type="submit"
             disabled={loading}
@@ -130,8 +106,6 @@ export default function VerifyEmail() {
             {loading ? "Verifying..." : "Verify Email"}
           </button>
         </form>
-
-        {/* Resend */}
         <div className="text-center mt-4">
           <button
             type="button"
@@ -144,5 +118,14 @@ export default function VerifyEmail() {
         </div>
       </div>
     </div>
+  );
+}
+
+// 👇 Outer component wraps with Suspense
+export default function VerifyEmail() {
+  return (
+    <Suspense fallback={null}>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }

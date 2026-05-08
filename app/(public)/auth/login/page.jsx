@@ -1,22 +1,24 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSignIn } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 import { FiEye, FiEyeOff, FiLoader } from "react-icons/fi";
-
 import { useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import Link from "next/link";
 import { signinSchema } from "../../../../schemas/auth";
 import { useSearchParams } from "next/navigation";
-//
-export default function Login() {
+
+export const dynamic = "force-dynamic";
+
+function LoginContent() {
   const [showPassword, setShowPassword] = useState(false);
   const { signIn, setActive, isLoaded } = useSignIn();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams(); // ✅ safe inside Suspense
   const {
     register,
     handleSubmit,
@@ -27,35 +29,28 @@ export default function Login() {
 
   const onSubmit = async (data) => {
     if (!isLoaded || isSubmitting) return;
-
     const toastId = toast.loading("Signing you in...");
-
     try {
       const result = await signIn.create({
         identifier: data.email,
         password: data.password,
       });
-
       if (result.status === "complete") {
         if (!result.createdSessionId) {
           toast.error("Login failed. Please try again.", { id: toastId });
           return;
         }
-
         await setActive({ session: result.createdSessionId });
         toast.success("Welcome back! Redirecting...", { id: toastId });
-
         const redirectUrl = searchParams.get("redirect_url");
         const destination = redirectUrl
           ? `/auth/redirect?redirect_url=${redirectUrl}`
           : "/auth/redirect";
-
         setTimeout(() => {
           window.location.replace(destination);
         }, 600);
         return;
       }
-
       toast.error("Additional verification required.", { id: toastId });
     } catch (err) {
       console.error(err);
@@ -67,7 +62,6 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      {/* Toast container */}
       <Toaster
         position="top-center"
         toastOptions={{
@@ -77,24 +71,19 @@ export default function Login() {
           error: { style: { background: "#fef2f2", color: "#991b1b" } },
         }}
       />
-
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="w-full max-w-lg bg-white rounded-3xl shadow-2xl p-8"
       >
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900">Welcome back</h1>
           <p className="text-gray-500 mt-2">
             Login to manage your properties or find your next stay
           </p>
         </div>
-
-        {/* Form */}
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-          {/* Email */}
           <div className="flex flex-col gap-1">
             <div className="relative">
               <FaEnvelope className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400" />
@@ -121,8 +110,6 @@ export default function Login() {
               )}
             </AnimatePresence>
           </div>
-
-          {/* Password */}
           <div className="flex flex-col gap-1">
             <div className="relative">
               <FaLock className="absolute top-1/2 left-4 -translate-y-1/2 text-gray-400" />
@@ -137,7 +124,6 @@ export default function Login() {
                     : "border-gray-300"
                 }`}
               />
-              {/* Show/hide password toggle */}
               <button
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
@@ -164,8 +150,6 @@ export default function Login() {
               )}
             </AnimatePresence>
           </div>
-
-          {/* Options */}
           <div className="flex items-center justify-between text-sm">
             <label className="flex items-center gap-2 text-gray-600 cursor-pointer">
               <input type="checkbox" className="rounded border-gray-300" />
@@ -178,8 +162,6 @@ export default function Login() {
               Forgot password?
             </Link>
           </div>
-
-          {/* Submit Button */}
           <motion.button
             type="submit"
             disabled={isSubmitting || !isLoaded}
@@ -197,8 +179,6 @@ export default function Login() {
             )}
           </motion.button>
         </form>
-
-        {/* Footer */}
         <p className="text-center text-sm text-gray-500 mt-6">
           Don't have an account?{" "}
           <Link
@@ -210,5 +190,13 @@ export default function Login() {
         </p>
       </motion.div>
     </div>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
   );
 }

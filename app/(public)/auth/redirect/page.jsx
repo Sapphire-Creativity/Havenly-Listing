@@ -1,16 +1,18 @@
 "use client";
 
+import { Suspense } from "react"; // 👈 1. Add this import
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useSearchParams } from "next/navigation";
 
-export default function AuthRedirect() {
+// 👇 2. Rename to AuthRedirectContent
+function AuthRedirectContent() {
   const { user, isLoaded, isSignedIn } = useUser();
   const router = useRouter();
   const [attempts, setAttempts] = useState(0);
-  const searchParams = useSearchParams(); 
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (!isLoaded) return;
@@ -30,7 +32,6 @@ export default function AuthRedirect() {
     }
 
     const redirect = async () => {
-      // ✅ Force fetch latest user data including unsafeMetadata
       await user.reload();
 
       const redirectUrl = searchParams.get("redirect_url");
@@ -61,7 +62,6 @@ export default function AuthRedirect() {
         transition={{ duration: 0.5, ease: "easeOut" }}
         className="flex flex-col items-center gap-6"
       >
-        {/* Animated Logo Mark */}
         <div className="relative">
           <motion.div
             animate={{ rotate: 360 }}
@@ -72,7 +72,6 @@ export default function AuthRedirect() {
           <div className="absolute inset-4 rounded-lg bg-gradient-to-tr from-primary-accent to-primary opacity-60" />
         </div>
 
-        {/* Text */}
         <div className="text-center space-y-2">
           <h2 className="text-xl font-semibold text-gray-800">
             Setting things up...
@@ -82,7 +81,6 @@ export default function AuthRedirect() {
           </p>
         </div>
 
-        {/* Animated dots */}
         <div className="flex items-center gap-2">
           {[0, 1, 2].map((i) => (
             <motion.span
@@ -99,7 +97,6 @@ export default function AuthRedirect() {
           ))}
         </div>
 
-        {/* Subtle warning if taking too long */}
         {attempts > 3 && (
           <motion.p
             initial={{ opacity: 0 }}
@@ -118,5 +115,14 @@ export default function AuthRedirect() {
         )}
       </motion.div>
     </div>
+  );
+}
+
+// 👇 3. Add this new default export at the bottom
+export default function AuthRedirect() {
+  return (
+    <Suspense fallback={null}>
+      <AuthRedirectContent />
+    </Suspense>
   );
 }

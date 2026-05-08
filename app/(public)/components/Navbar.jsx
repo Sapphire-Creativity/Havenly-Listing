@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react"; // 👈 1. Add this import
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import {
@@ -18,7 +19,8 @@ import { useClerk, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 
-export default function Navbar() {
+// 👇 2. Rename to NavbarContent
+function NavbarContent() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -39,7 +41,6 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Home", href: "/", icon: <FiHome className="w-5 h-5" /> },
-
     {
       name: "Buy",
       href: "/buy",
@@ -102,7 +103,6 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Buttons */}
-
           <div className="hidden lg:flex items-center space-x-4">
             {!isLoaded ? null : isSignedIn ? (
               <>
@@ -210,7 +210,6 @@ export default function Navbar() {
           {/* Menu Header */}
           <div className="p-6 border-b border-gray-100">
             <div className="flex items-center space-x-3">
-              {/* Logo with animation */}
               <div className="flex items-center space-x-3">
                 <Link href="/" className="flex items-center space-x-2 group">
                   <div className="relative">
@@ -249,8 +248,6 @@ export default function Navbar() {
 
           {/* Menu Footer */}
           {/* <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-100">
-            
-
             <button
               className="w-full py-3.5 px-6 rounded-full bg-linear-to-r from-primary-accent to-primary border text-white font-medium transition-all duration-600 hover:bg-none hover:border-primary hover:text-primary active:scale-95"
               onClick={() => setMobileOpen(false)}
@@ -261,5 +258,14 @@ export default function Navbar() {
         </div>
       </div>
     </nav>
+  );
+}
+
+// 👇 3. Add this new default export at the bottom
+export default function Navbar() {
+  return (
+    <Suspense fallback={null}>
+      <NavbarContent />
+    </Suspense>
   );
 }

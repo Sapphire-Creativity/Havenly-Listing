@@ -1,9 +1,15 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { FaHome, FaKey, FaChartLine, FaCheckCircle } from "react-icons/fa";
+import { useSearchParams } from "next/navigation";
 
 export default function ListPropertyCTA() {
+  const redirectUrl = "/propertyowner/dashboard/add-property";
+  const loginHref = `/auth/login?redirect_url=${encodeURIComponent(
+    redirectUrl,
+  )}`;
   return (
     <section className="max-w-8xl relative py-24 overflow-hidden bg-white">
       {/* Decorative blur */}
@@ -11,7 +17,6 @@ export default function ListPropertyCTA() {
       <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-white/10 rounded-full blur-3xl" />
 
       <div className="relative mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-
         {/* LEFT CONTENT */}
         <motion.div
           initial={{ opacity: 0, x: -40 }}
@@ -23,9 +28,10 @@ export default function ListPropertyCTA() {
             For Property Owners & Agents
           </span>
 
-          <h2 className="text-4xl  md:text-6xl font-stretch-extra-condensed text-primary leading-tight mb-7">
+          <h2 className="text-3xl  md:text-5xl font-stretch-extra-condensed text-primary leading-tight mb-7">
             Turn Your Property Into <br className="hidden sm:block" />
-            <span className="text-primary-accent">Income.</span> List It With Us.
+            <span className="text-primary-accent">Income.</span> List It With
+            Us.
           </h2>
 
           <p className="text-lg max-w-[70%] mb-10">
@@ -35,10 +41,12 @@ export default function ListPropertyCTA() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4">
-            <button className="px-10 py-5 rounded-full bg-primary text-white font-bold hover:bg-primary-accent transition-all shadow-lg">
+            <Link
+              href={loginHref}
+              className="px-10 py-5 rounded-full bg-primary text-white font-bold hover:bg-primary-accent transition-all shadow-lg"
+            >
               List Your Property
-            </button>
-            
+            </Link>
           </div>
         </motion.div>
 

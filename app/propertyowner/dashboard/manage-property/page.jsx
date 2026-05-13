@@ -5,7 +5,15 @@ import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "../../../../lib/supabase";
-import { FaPlus, FaEdit, FaTrash, FaBed, FaBath, FaCar } from "react-icons/fa";
+import {
+  FaPlus,
+  FaEdit,
+  FaTrash,
+  FaBed,
+  FaBath,
+  FaCar,
+  FaRegEye,
+} from "react-icons/fa";
 import { CiLocationOn } from "react-icons/ci";
 import { TbDimensions } from "react-icons/tb";
 import DeleteModal from "../../../(public)/components/dashboardcomponents/DeleteModal";
@@ -28,6 +36,8 @@ const StatusBadge = ({ status }) => {
 
 // ─── Property Card ────────────────────────────────────────────────────────────
 const PropertyCard = ({ property, onEdit, onDelete }) => {
+  const router = useRouter();
+
   const formatPrice = () => {
     if (property.status === "For Shortlet" && property.pricing?.nightlyRate) {
       return `₦${Number(property.pricing.nightlyRate).toLocaleString()}/night`;
@@ -40,6 +50,20 @@ const PropertyCard = ({ property, onEdit, onDelete }) => {
       return `₦${Number(property.pricing.salePrice).toLocaleString()}`;
     }
     return "Price on request";
+  };
+
+  const handleCardClick = (property) => {
+    let route = "";
+
+    if (property.listing_type === "shortlet") {
+      route = `/shortlet/${property.id}`;
+    } else if (property.listing_type === "buy") {
+      route = `/buy/${property.id}`;
+    } else {
+      route = `/rent/${property.id}`;
+    }
+
+    router.push(route);
   };
 
   return (
@@ -115,18 +139,30 @@ const PropertyCard = ({ property, onEdit, onDelete }) => {
         </p>
 
         {/* Actions */}
-        <div className="flex gap-2 pt-3 border-t border-gray-100">
+        <div className="flex items-center gap-2 pt-3 border-t border-gray-100">
+          {/* Buttons */}
+          <div className="flex flex-1 gap-2">
+            <button
+              onClick={() => onEdit(property)}
+              className="flex-1 flex items-center justify-center gap-2 py-2 border border-primary text-primary hover:bg-primary hover:text-white rounded-full text-sm font-medium transition-all"
+            >
+              <FaEdit /> Edit
+            </button>
+
+            <button
+              onClick={() => onDelete(property)}
+              className="flex-1 flex items-center justify-center gap-2 py-2 border border-red-400 text-red-500 hover:bg-red-500 hover:text-white rounded-full text-sm font-medium transition-all"
+            >
+              <FaTrash /> Delete
+            </button>
+          </div>
+
+          {/* View Button */}
           <button
-            onClick={() => onEdit(property)}
-            className="flex-1 flex items-center justify-center gap-2 py-2 border border-primary text-primary hover:bg-primary hover:text-white rounded-full text-sm font-medium transition-colors"
+            onClick={() => handleCardClick(property)}
+            className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-100 hover:bg-primary hover:text-white text-gray-600 transition-all duration-300"
           >
-            <FaEdit /> Edit
-          </button>
-          <button
-            onClick={() => onDelete(property)}
-            className="flex-1 flex items-center justify-center gap-2 py-2 border border-red-400 text-red-500 hover:bg-red-500 hover:text-white rounded-full text-sm font-medium transition-colors"
-          >
-            <FaTrash /> Delete
+            <FaRegEye className="text-[14px]" />
           </button>
         </div>
       </div>
@@ -240,8 +276,6 @@ const ManageProperties = () => {
             <FaPlus /> Add Property
           </button>
         </div>
-
-        
 
         {/* Filter Tabs */}
         <div className="flex gap-2 mb-6 flex-wrap">

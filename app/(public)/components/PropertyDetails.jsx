@@ -130,6 +130,18 @@ const PropertyDetails = ({ property, listingType }) => {
     }
   };
 
+  // To capitalize each word
+  const capitalizeEachWord = (str) => {
+    if (!str) return "";
+
+    return str
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   return (
     <>
       <Head>
@@ -259,7 +271,7 @@ const PropertyDetails = ({ property, listingType }) => {
               {/* Property Title and Price */}
               <div className="mb-8">
                 <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-                  {property.title} {/* ✅ fixed */}
+                  {capitalizeEachWord(property.title)}
                 </h1>
                 <div className="flex items-baseline gap-2">
                   <span className="text-2xl md:text-3xl font-bold text-primary">

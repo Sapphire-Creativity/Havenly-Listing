@@ -210,13 +210,13 @@ const TrendingSection = () => {
         )}
 
         {/* View More Button */}
-        {!loading && properties.length >= 8 && (
+        {/* {!loading && properties.length >= 8 && (
           <div className="text-center mt-12">
             <button className="px-8 py-4 bg-primary hover:bg-primary-accent text-white font-medium rounded-full shadow-lg hover:shadow-xl transition-all duration-300">
               View All Properties
             </button>
           </div>
-        )}
+        )} */}
       </div>
     </section>
   );

@@ -68,44 +68,36 @@ const Footer = () => {
             </h3>
             <ul className="space-y-3">
               <li>
-                <a
+                <Link
                   href="/properties"
                   className="text-gray-800 hover:text-primary-accent  hover:pl-2 transition-all duration-300"
                 >
                   Browse Properties
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="/sell"
+                <Link
+                  href="/buy"
                   className="text-gray-800 hover:text-primary-accent  hover:pl-2 transition-all duration-300"
                 >
-                  Sell Property
-                </a>
+                  Buy Property
+                </Link>
               </li>
               <li>
-                <a
-                  href="/agents"
+                <Link
+                  href="/rent"
                   className="text-gray-800 hover:text-primary-accent  hover:pl-2 transition-all duration-300"
                 >
-                  Find Agents
-                </a>
+                  Rent a Property
+                </Link>
               </li>
               <li>
-                <a
-                  href="/mortgage"
+                <Link
+                  href=""
                   className="text-gray-800 hover:text-primary-accent  hover:pl-2 transition-all duration-300"
                 >
-                  Mortgage Calculator
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/blog"
-                  className="text-gray-800 hover:text-primary-accent  hover:pl-2 transition-all duration-300"
-                >
-                  Blog & Guides
-                </a>
+                  Blogs
+                </Link>
               </li>
             </ul>
           </div>
@@ -116,14 +108,7 @@ const Footer = () => {
               Contact Us
             </h3>
             <ul className="space-y-4">
-              <li className="flex items-start space-x-3">
-                <FaMapMarkerAlt className="h-5 w-5 text-primary-accent mt-1" />
-                <span className="text-gray-800">
-                  123 Property Street
-                  <br />
-                  Real Estate City, 10001
-                </span>
-              </li>
+               
               <li className="flex items-center space-x-3">
                 <FaPhone className="h-5 w-5 text-primary-accent" />
                 <span className="text-gray-800">+1 (555) 123-4567</span>
@@ -185,7 +170,7 @@ const Footer = () => {
         {/* Bottom Bar */}
         <div className="flex flex-col md:flex-row justify-between items-center pt-6 border-t border-gray-800">
           <div className="text-gray-400 text-sm mb-4 md:mb-0">
-            © {currentYear} PropertyFinder. All rights reserved.
+            © {currentYear} Havenly Listing. All rights reserved.
           </div>
           <div className="flex flex-wrap justify-center gap-6 text-sm">
             <a

@@ -64,6 +64,18 @@ const TrendingSectionPropertyCard = ({
   // safely get first image
   const firstImage = property.images?.[0] || null;
 
+  // To capitalize each word
+  const capitalizeEachWord = (str) => {
+    if (!str) return "";
+
+    return str
+      .trim()
+      .toLowerCase()
+      .split(/\s+/)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
+
   return (
     <div
       className="group bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden cursor-pointer hover:-translate-y-1"
@@ -130,7 +142,9 @@ const TrendingSectionPropertyCard = ({
 
           {/* Share Button */}
           <button
-            onClick={(e) => openShareModal(property.id, e, property.listing_type)}
+            onClick={(e) =>
+              openShareModal(property.id, e, property.listing_type)
+            }
             className="p-2 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white shadow-md transition-all duration-200"
             aria-label="Share property"
           >
@@ -155,21 +169,23 @@ const TrendingSectionPropertyCard = ({
           </div>
           {property.fees_breakdown?.serviceCharge > 0 && (
             <p className="text-sm text-gray-600 mt-1">
-              + ₦{property.fees_breakdown.serviceCharge.toLocaleString()} service charge
+              + ₦{property.fees_breakdown.serviceCharge.toLocaleString()}{" "}
+              service charge
             </p>
           )}
         </div>
 
         {/* Title */}
         <h4 className="font-semibold text-lg text-gray-800 mb-2 line-clamp-1">
-          {property.title}
+          {capitalizeEachWord(property.title)}
         </h4>
 
         {/* Location */}
         <div className="flex items-center text-gray-600 mb-4">
           <CiLocationOn className="mr-2 w-5 h-5" />
           <span className="text-sm">
-            {property.location}, {property.state}
+            {capitalizeEachWord(property.location)},{" "}
+            {capitalizeEachWord(property.state)}
           </span>
         </div>
 

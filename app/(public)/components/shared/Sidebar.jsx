@@ -25,7 +25,7 @@ export default function Sidebar({ variant = "client" }) {
   const links = linkMap[variant];
   const pathname = usePathname();
 
-  // On desktop: user can toggle. On mobile: always collapsed.
+  // On desktop (lg+): user can toggle. On mobile/md: always collapsed.
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -38,9 +38,9 @@ export default function Sidebar({ variant = "client" }) {
     setMounted(true);
 
     const checkMobile = () => {
-      const mobile = window.innerWidth < 768;
+      // Treat anything below lg (1024px) as "mobile" — stays collapsed
+      const mobile = window.innerWidth < 1024;
       setIsMobile(mobile);
-      // force collapsed on mobile
       if (mobile) setIsCollapsed(true);
     };
 
@@ -50,7 +50,7 @@ export default function Sidebar({ variant = "client" }) {
   }, []);
 
   const handleToggle = () => {
-    // only allow expand on desktop
+    // only allow expand on lg+ screens
     if (!isMobile) setIsCollapsed((prev) => !prev);
   };
 
@@ -66,7 +66,7 @@ export default function Sidebar({ variant = "client" }) {
     }
   };
 
-  // collapsed state — true on mobile always, toggleable on desktop
+  // collapsed state — true on mobile/md always, toggleable on lg+
   const collapsed = isMobile ? true : isCollapsed;
 
   if (!mounted) return null;
@@ -97,9 +97,12 @@ export default function Sidebar({ variant = "client" }) {
                   <HiOutlineExclamation className="w-10 h-10 text-red-500" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold text-center text-gray-800 mb-2">Sign Out?</h3>
+              <h3 className="text-xl font-bold text-center text-gray-800 mb-2">
+                Sign Out?
+              </h3>
               <p className="text-gray-600 text-center mb-6">
-                Are you sure you want to sign out? You'll need to log in again to access your account.
+                Are you sure you want to sign out? You'll need to log in again
+                to access your account.
               </p>
               <div className="flex gap-3">
                 <button
@@ -117,9 +120,24 @@ export default function Sidebar({ variant = "client" }) {
                 >
                   {isLoggingOut ? (
                     <>
-                      <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      <svg
+                        className="animate-spin h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
                       </svg>
                       Signing out...
                     </>
@@ -131,7 +149,9 @@ export default function Sidebar({ variant = "client" }) {
                   )}
                 </button>
               </div>
-              <p className="text-xs text-center text-gray-400 mt-4">Your session will be securely ended</p>
+              <p className="text-xs text-center text-gray-400 mt-4">
+                Your session will be securely ended
+              </p>
             </div>
           </div>
         </div>
@@ -154,7 +174,9 @@ export default function Sidebar({ variant = "client" }) {
         <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5 pointer-events-none" />
 
         {/* Header */}
-        <div className={`relative flex items-center h-16 px-3 border-b border-gray-100 ${collapsed ? "justify-center" : "justify-between"}`}>
+        <div
+          className={`relative flex items-center h-16 px-3 border-b border-gray-100 ${collapsed ? "justify-center" : "justify-between"}`}
+        >
           {!collapsed ? (
             <Link href="/" className="flex items-center space-x-2 group">
               <div className="relative flex-shrink-0">
@@ -174,11 +196,11 @@ export default function Sidebar({ variant = "client" }) {
             </Link>
           )}
 
-          {/* Toggle button — desktop only */}
+          {/* Toggle button — lg+ only */}
           {!isMobile && (
             <button
               onClick={handleToggle}
-              className="hidden md:flex items-center justify-center w-7 h-7 rounded-lg hover:bg-primary-accent/10 transition-colors text-gray-400 hover:text-primary flex-shrink-0"
+              className="hidden lg:flex items-center justify-center w-7 h-7 rounded-lg hover:bg-primary-accent/10 transition-colors text-gray-400 hover:text-primary flex-shrink-0"
               aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
             >
               {collapsed ? (
@@ -205,9 +227,10 @@ export default function Sidebar({ variant = "client" }) {
                     group relative flex items-center px-2.5 py-3 rounded-xl
                     transition-all duration-200
                     ${collapsed ? "justify-center" : "justify-start"}
-                    ${isActive
-                      ? "bg-primary/10 text-primary"
-                      : "text-gray-500 hover:text-white hover:bg-primary-accent"
+                    ${
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-gray-500 hover:text-white hover:bg-primary-accent"
                     }
                   `}
                 >
@@ -226,7 +249,9 @@ export default function Sidebar({ variant = "client" }) {
 
                   {/* Label */}
                   {!collapsed && (
-                    <span className="ml-3 text-sm font-medium truncate">{link.name}</span>
+                    <span className="ml-3 text-sm font-medium truncate">
+                      {link.name}
+                    </span>
                   )}
 
                   {/* Tooltip on collapsed */}
@@ -244,9 +269,13 @@ export default function Sidebar({ variant = "client" }) {
         </nav>
 
         {/* Footer */}
-        <div className={`relative p-3 bg-primary rounded-t-2xl ${collapsed ? "flex flex-col items-center gap-2" : ""}`}>
+        <div
+          className={`relative p-3 bg-primary rounded-t-2xl ${collapsed ? "flex flex-col items-center gap-2" : ""}`}
+        >
           {/* User info */}
-          <div className={`flex ${collapsed ? "justify-center" : "items-center gap-3"} mb-3`}>
+          <div
+            className={`flex ${collapsed ? "justify-center" : "items-center gap-3"} mb-3`}
+          >
             <div className="relative flex-shrink-0">
               <div className="w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md">
                 <HiOutlineUser className="w-5 h-5 text-primary" />
@@ -255,24 +284,33 @@ export default function Sidebar({ variant = "client" }) {
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-white truncate">{user?.fullName}</p>
-                <p className="text-xs text-white/70 truncate capitalize">{user?.unsafeMetadata?.role}</p>
+                <p className="text-sm font-semibold text-white truncate">
+                  {user?.fullName}
+                </p>
+                <p className="text-xs text-white/70 truncate capitalize">
+                  {user?.unsafeMetadata?.role}
+                </p>
               </div>
             )}
           </div>
 
           {/* Settings & Logout */}
-          <div className={`${collapsed ? "flex flex-col items-center gap-1.5 w-full" : "space-y-1"}`}>
+          <div
+            className={`${collapsed ? "flex flex-col items-center gap-1.5 w-full" : "space-y-1"}`}
+          >
             <button
               className={`
                 transition-all duration-200 group
-                ${collapsed
-                  ? "w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10"
-                  : "w-full px-3 py-2.5 text-sm text-white/70 hover:text-gray-700 hover:bg-white rounded-xl flex items-center gap-3"
+                ${
+                  collapsed
+                    ? "w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10"
+                    : "w-full px-3 py-2.5 text-sm text-white/70 hover:text-gray-700 hover:bg-white rounded-xl flex items-center gap-3"
                 }
               `}
             >
-              <HiOutlineCog className={`w-4 h-4 flex-shrink-0 ${collapsed ? "text-white/70 group-hover:text-white group-hover:rotate-90 transition-all duration-300" : "group-hover:rotate-90 transition-all duration-300"}`} />
+              <HiOutlineCog
+                className={`w-4 h-4 flex-shrink-0 ${collapsed ? "text-white/70 group-hover:text-white group-hover:rotate-90 transition-all duration-300" : "group-hover:rotate-90 transition-all duration-300"}`}
+              />
               {!collapsed && <span className="font-medium">Settings</span>}
             </button>
 
@@ -280,9 +318,10 @@ export default function Sidebar({ variant = "client" }) {
               onClick={() => setShowLogoutModal(true)}
               className={`
                 transition-all duration-200 group
-                ${collapsed
-                  ? "w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10"
-                  : "w-full px-3 py-2.5 text-sm text-white/70 hover:text-red-500 hover:bg-white rounded-xl flex items-center gap-3"
+                ${
+                  collapsed
+                    ? "w-9 h-9 flex items-center justify-center rounded-xl hover:bg-white/10"
+                    : "w-full px-3 py-2.5 text-sm text-white/70 hover:text-red-500 hover:bg-white rounded-xl flex items-center gap-3"
                 }
               `}
             >
@@ -295,8 +334,14 @@ export default function Sidebar({ variant = "client" }) {
 
       <style jsx global>{`
         @keyframes fadeInScale {
-          from { opacity: 0; transform: scale(0.95); }
-          to { opacity: 1; transform: scale(1); }
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
         }
         .animate-fadeInScale {
           animation: fadeInScale 0.2s ease-out;

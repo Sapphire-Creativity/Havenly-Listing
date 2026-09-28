@@ -1,12 +1,13 @@
 import React from "react";
 import ExploreLocations from "./(public)/components/ExploreLocations";
 import TrendingSection from "./(public)/components/TrendingSection";
-import GeometricMapUI from "./(public)/components/GeometricMapUI";
+import GeometricMapUI from "./(public)/components/PropertyMap";
 import ListPropertyCTA from "./(public)/components/ListPropertyCTA";
 import SearchBar from "./(public)/components/SearchBar";
 import Hero from "./(public)/components/Hero";
 import Navbar from "./(public)/components/Navbar";
 import Footer from "./(public)/components/Footer";
+import PropertyMapSection from "./(public)/components/PropertyMapSection";
 
 const page = () => {
   return (
@@ -17,7 +18,7 @@ const page = () => {
 
       <ExploreLocations />
       <TrendingSection />
-      <GeometricMapUI />
+      <PropertyMapSection />
       <ListPropertyCTA />
       <Footer />
     </>

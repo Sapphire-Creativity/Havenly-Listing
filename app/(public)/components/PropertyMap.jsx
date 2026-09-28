@@ -4,7 +4,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { Fragment, useEffect, useMemo, useRef, useState } from "react";
 import { FiArrowUpRight, FiMapPin } from "react-icons/fi";
-import properties from "../../../public/assets/data";
 
 /* ------------------------------------------------------------------
    MAP DATA
@@ -69,7 +68,7 @@ const CITY_LABELS = [
 /* ------------------------------------------------------------------
    SETTINGS
 ------------------------------------------------------------------- */
-const MAX_PINS = 14; // how many pins to show
+const MAX_PINS = 12; // safety cap on pins drawn (the server already sends only a few)
 const MAX_PER_STATE = 2; // stops pins stacking on top of each other
 const OFFSETS = [
   [0, 0],
@@ -114,7 +113,7 @@ function resolveState(p) {
   return null;
 }
 
-function buildPins() {
+function buildPins(properties) {
   const perState = {};
   const pins = [];
   for (const property of properties) {
@@ -154,8 +153,8 @@ function detailsHref(p) {
     p.listingType === "shortlet"
       ? "shortlet"
       : p.listingType === "buy"
-      ? "buy"
-      : "rent";
+        ? "buy"
+        : "rent";
   return `/${route}/${p.id}`;
 }
 
@@ -177,7 +176,13 @@ function placeTooltip(xPct, yPct, mapW) {
 ------------------------------------------------------------------- */
 function PinIcon({ color }) {
   return (
-    <svg width="30" height="40" viewBox="0 0 30 40" fill="none" aria-hidden="true">
+    <svg
+      width="30"
+      height="40"
+      viewBox="0 0 30 40"
+      fill="none"
+      aria-hidden="true"
+    >
       <path
         d="M15 39C15 39 2 25.5 2 15a13 13 0 0 1 26 0C28 25.5 15 39 15 39Z"
         fill={color}
@@ -292,7 +297,7 @@ function PropertyTooltip({ property: p, status, tw, left, tipX, below }) {
 /* ------------------------------------------------------------------
    MAIN SECTION
 ------------------------------------------------------------------- */
-export default function PropertyMap() {
+export default function PropertyMap({ properties = [], total = 0 }) {
   const panelRef = useRef(null);
   const mapRef = useRef(null);
 
@@ -302,12 +307,7 @@ export default function PropertyMap() {
   const [filter, setFilter] = useState("All");
   const [activeId, setActiveId] = useState(null);
 
-  const pins = useMemo(() => buildPins(), []);
-
-  const totalStates = useMemo(
-    () => new Set(properties.map(resolveState).filter(Boolean)).size,
-    []
-  );
+  const pins = useMemo(() => buildPins(properties), [properties]);
 
   // Filter buttons: only statuses that actually have pins
   const filters = useMemo(() => {
@@ -319,7 +319,12 @@ export default function PropertyMap() {
     const known = Object.keys(STATUS).filter((s) => counts[s]);
     const other = Object.keys(counts).filter((s) => !STATUS[s]);
     return [
-      { key: "All", label: "All listings", count: pins.length, color: "#ffffff" },
+      {
+        key: "All",
+        label: "All listings",
+        count: pins.length,
+        color: "#ffffff",
+      },
       ...[...known, ...other].map((s) => ({
         key: s,
         label: statusOf(s).label,
@@ -340,7 +345,7 @@ export default function PropertyMap() {
           io.disconnect();
         }
       },
-      { threshold: 0.25 }
+      { threshold: 0.25 },
     );
     io.observe(el);
     return () => io.disconnect();
@@ -351,7 +356,7 @@ export default function PropertyMap() {
     if (!visible) return;
     const t = setTimeout(
       () => setSettled(true),
-      PIN_START + pins.length * PIN_STEP + 900
+      PIN_START + pins.length * PIN_STEP + 900,
     );
     return () => clearTimeout(t);
   }, [visible, pins.length]);
@@ -361,7 +366,7 @@ export default function PropertyMap() {
     const el = mapRef.current;
     if (!el) return;
     const ro = new ResizeObserver(([entry]) =>
-      setMapW(entry.contentRect.width)
+      setMapW(entry.contentRect.width),
     );
     ro.observe(el);
     return () => ro.disconnect();
@@ -380,6 +385,8 @@ export default function PropertyMap() {
       document.removeEventListener("keydown", onKey);
     };
   }, []);
+
+  if (pins.length === 0) return null;
 
   return (
     <section>
@@ -443,26 +450,12 @@ export default function PropertyMap() {
                         />
                         {f.label}
                       </span>
-                      <span
-                        className={active ? "text-muted" : "text-white/50"}
-                      >
+                      <span className={active ? "text-muted" : "text-white/50"}>
                         {f.count}
                       </span>
                     </button>
                   );
                 })}
-              </div>
-
-              <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
-                <Link
-                  href="/listings"
-                  className="inline-flex items-center gap-2 rounded-full bg-background px-6 py-3 text-sm font-semibold text-foreground transition-colors duration-300 hover:bg-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                >
-                  Browse all listings
-                </Link>
-                <p className="text-sm text-white/60">
-                  {properties.length} listings in {totalStates} states
-                </p>
               </div>
             </div>
 
@@ -478,10 +471,22 @@ export default function PropertyMap() {
                   {/* Faint grid lines */}
                   <g stroke="white" strokeOpacity="0.07" strokeDasharray="2 6">
                     {Array.from({ length: 7 }, (_, i) => (
-                      <line key={`h${i}`} x1="0" x2={MAP_W} y1={40 + i * 100} y2={40 + i * 100} />
+                      <line
+                        key={`h${i}`}
+                        x1="0"
+                        x2={MAP_W}
+                        y1={40 + i * 100}
+                        y2={40 + i * 100}
+                      />
                     ))}
                     {Array.from({ length: 8 }, (_, i) => (
-                      <line key={`v${i}`} y1="0" y2={MAP_H} x1={50 + i * 100} x2={50 + i * 100} />
+                      <line
+                        key={`v${i}`}
+                        y1="0"
+                        y2={MAP_H}
+                        x1={50 + i * 100}
+                        x2={50 + i * 100}
+                      />
                     ))}
                   </g>
 
@@ -503,7 +508,9 @@ export default function PropertyMap() {
                     strokeWidth="1.5"
                     strokeLinejoin="round"
                     className={`[stroke-dasharray:1] transition-[stroke-dashoffset] duration-[2200ms] ease-out motion-reduce:transition-none ${
-                      visible ? "[stroke-dashoffset:0]" : "[stroke-dashoffset:1]"
+                      visible
+                        ? "[stroke-dashoffset:0]"
+                        : "[stroke-dashoffset:1]"
                     }`}
                   />
 

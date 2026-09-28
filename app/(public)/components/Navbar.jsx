@@ -1,8 +1,8 @@
 "use client";
 
-import { Suspense } from "react"; // 👈 1. Add this import
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import {
   FiMenu,
   FiX,
@@ -11,257 +11,372 @@ import {
   FiLogIn,
   FiLogOut,
   FiUser,
+  FiChevronRight,
 } from "react-icons/fi";
 import { HiOutlineBuildingOffice2 } from "react-icons/hi2";
-import { TbBuildingEstate } from "react-icons/tb";
 import { MdOutlineRealEstateAgent } from "react-icons/md";
 import { useClerk, useUser } from "@clerk/nextjs";
-import { useRouter } from "next/navigation";
-import { useSearchParams } from "next/navigation";
 
-// 👇 2. Rename to NavbarContent
 function NavbarContent() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
 
   const { signOut } = useClerk();
   const { user, isSignedIn, isLoaded } = useUser();
-  const router = useRouter();
+
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const role = user?.unsafeMetadata?.role;
-  const searchParams = useSearchParams();
+
+  const dashboardHref =
+    role === "owner" ? "/propertyowner/dashboard" : "/client/dashboard";
+
+  const navLinks = [
+    {
+      name: "Home",
+      href: "/",
+      icon: <FiHome className="w-[18px] h-[18px]" />,
+    },
+    {
+      name: "Buy",
+      href: "/buy",
+      icon: <MdOutlineRealEstateAgent className="w-[19px] h-[19px]" />,
+    },
+    {
+      name: "Rent",
+      href: "/rent",
+      icon: <HiOutlineBuildingOffice2 className="w-[19px] h-[19px]" />,
+    },
+    {
+      name: "Shortlet",
+      href: "/shortlet",
+      icon: <FiBriefcase className="w-[18px] h-[18px]" />,
+    },
+  ];
+
+  const isActive = (href) => {
+    if (href === "/") {
+      return pathname === "/";
+    }
+
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   const handleSignOut = async () => {
     await signOut();
     window.location.replace("/auth/login");
   };
 
-  const dashboardHref =
-    role === "owner" ? "/propertyowner/dashboard" : "/client/dashboard";
+  const closeMobileMenu = () => {
+    setMobileOpen(false);
+  };
 
-  const navLinks = [
-    { name: "Home", href: "/", icon: <FiHome className="w-5 h-5" /> },
-    {
-      name: "Buy",
-      href: "/buy",
-      icon: <MdOutlineRealEstateAgent className="w-5 h-5" />,
-    },
-    {
-      name: "Rent",
-      href: "/rent",
-      icon: <HiOutlineBuildingOffice2 className="w-5 h-5" />,
-    },
-    {
-      name: "Shortlet",
-      href: "/shortlet",
-      icon: <FiBriefcase className="w-5 h-5" />,
-    },
-  ];
-
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     setScrolled(window.scrollY > 20);
-  //   };
-  //   window.addEventListener("scroll", handleScroll);
-  //   return () => window.removeEventListener("scroll", handleScroll);
-  // }, []);
+  const signInHref = `/auth/signup${
+    searchParams.get("redirect_url")
+      ? `?redirect_url=${searchParams.get("redirect_url")}`
+      : ""
+  }`;
 
   return (
-    <nav className=" z-90 transition-all duration-300 bg-white py-2 ">
-      <div className="max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo with animation */}
-          <div className="flex items-center space-x-3">
-            <Link href="/" className="flex items-center space-x-2 group">
-              <div className="relative">
-                <div className="w-9 h-9 bg-linear-to-r from-primary-accent to-primary rounded-xl rotate-45 group-hover:rotate-90 transition-all duration-500"></div>
-                <div className="absolute inset-2 bg-white rounded-md"></div>
+    <>
+      <nav className="sticky top-0 z-[90] w-full border-b border-black/[0.06] bg-[#f5f1eb]/95 backdrop-blur-xl">
+        <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+          <div className="flex h-[72px] items-center justify-between">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
+              <div className="relative flex h-9 w-9 items-center justify-center">
+                <div className="absolute inset-0 rotate-45 rounded-[10px] bg-[#2f6b4f] transition-transform duration-300 group-hover:rotate-[55deg]" />
+                <div className="relative h-4 w-4 rounded-[5px] bg-[#f5f1eb]" />
               </div>
-              <span className="text-md font-bold bg-linear-to-r from-primary-accent to-primary bg-clip-text text-transparent">
+
+              <span className="font-heading text-[17px] font-extrabold tracking-[-0.02em] text-[#2f6b4f]">
                 Havenly Listing
               </span>
             </Link>
-          </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center justify-between  space-x-3">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="group relative px-4 py-2 rounded-lg hover:bg-gray-50 transition-all duration-200 "
-              >
-                <div className="flex items-center space-x-2">
-                  {link.icon}
-                  <span className="font-medium text-gray-700 group-hover:text-primary-accent transition-colors">
-                    {link.name}
-                  </span>
-                </div>
-                <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-linear-to-r from-primary-accent to-primary transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
-              </Link>
-            ))}
-          </div>
+            {/* Desktop Navigation */}
+            <div className="hidden lg:flex items-center gap-1 rounded-full border border-black/[0.05] bg-white/60 p-1.5">
+              {navLinks.map((link) => {
+                const active = isActive(link.href);
 
-          {/* Desktop Buttons */}
-          <div className="hidden lg:flex items-center space-x-4">
-            {!isLoaded ? null : isSignedIn ? (
-              <>
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    className={`
+                      relative flex items-center gap-2 rounded-full px-4 py-2.5
+                      text-sm font-semibold transition-all duration-200
+                      ${
+                        active
+                          ? "bg-[#2f6b4f] text-white shadow-sm"
+                          : "text-[#1f2937]/70 hover:bg-white hover:text-[#2f6b4f]"
+                      }
+                    `}
+                  >
+                    {link.icon}
+                    <span>{link.name}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Desktop Actions */}
+            <div className="hidden lg:flex items-center gap-3">
+              {!isLoaded ? null : isSignedIn ? (
                 <>
                   <Link
                     href={dashboardHref}
-                    className="group flex items-center space-x-2 px-5 py-3 rounded-full border-2 border-gray-300 text-gray-700 font-medium transition-all duration-300 hover:border-primary-accent hover:text-primary-accent hover:shadow-md"
+                    className="flex items-center gap-2 rounded-full border border-[#2f6b4f]/20 bg-white px-5 py-2.5 text-sm font-semibold text-[#2f6b4f] transition-all hover:border-[#2f6b4f]/40 hover:bg-[#2f6b4f]/5"
                   >
-                    <FiUser className="w-4 h-4" />
-                    <span>Dashboard</span>
+                    <FiUser className="h-4 w-4" />
+                    Dashboard
                   </Link>
 
                   <button
                     onClick={handleSignOut}
-                    className="group flex items-center space-x-2 px-7 py-3 rounded-full bg-linear-to-r from-primary-accent to-primary text-white font-medium transition-all duration-300 hover:shadow-lg hover:shadow-primary-accent/25"
+                    className="flex items-center gap-2 rounded-full bg-[#2f6b4f] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#25563f] hover:shadow-lg hover:shadow-[#2f6b4f]/15"
                   >
-                    <FiLogOut className="w-4 h-4" />
-                    <span>Sign Out</span>
+                    <FiLogOut className="h-4 w-4" />
+                    Sign Out
                   </button>
                 </>
-              </>
-            ) : (
-              <>
-                <button className="group relative px-7 py-3 rounded-full bg-linear-to-r from-primary-accent to-primary text-white font-medium overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-primary-accent/25">
-                  <span className="relative z-10">List Property</span>
-                </button>
+              ) : (
+                <>
+                  <button className="rounded-full bg-[#2f6b4f] px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-[#25563f] hover:shadow-lg hover:shadow-[#2f6b4f]/15">
+                    List Property
+                  </button>
 
-                <Link
-                  href="/auth/signup/"
-                  className="group flex items-center space-x-2 px-7 py-3 rounded-full border-2 border-gray-300 text-gray-700 font-medium transition-all duration-300 hover:border-primary-accent hover:text-primary-accent hover:shadow-md"
+                  <Link
+                    href="/auth/signup"
+                    className="flex items-center gap-2 rounded-full border border-[#2f6b4f]/20 bg-white px-5 py-2.5 text-sm font-semibold text-[#2f6b4f] transition-all hover:border-[#2f6b4f]/40 hover:bg-[#2f6b4f]/5"
+                  >
+                    <FiLogIn className="h-4 w-4" />
+                    Sign In
+                  </Link>
+                </>
+              )}
+            </div>
+
+            {/* Mobile Actions */}
+            <div className="flex items-center gap-2 lg:hidden">
+              {!isLoaded ? null : isSignedIn ? (
+                <button
+                  onClick={handleSignOut}
+                  aria-label="Sign out"
+                  className="flex h-10 items-center gap-2 rounded-full border border-[#2f6b4f]/20 bg-white px-3.5 text-[#2f6b4f] transition hover:bg-[#2f6b4f]/5"
                 >
-                  <FiLogIn className="w-4 h-4" />
-                  <span>Sign In</span>
+                  <FiLogOut className="h-4 w-4" />
+                  <span className="hidden sm:inline text-sm font-semibold">
+                    Sign Out
+                  </span>
+                </button>
+              ) : (
+                <Link
+                  href={signInHref}
+                  className="flex h-10 items-center gap-2 rounded-full border border-[#2f6b4f]/20 bg-white px-3.5 text-[#2f6b4f] transition hover:bg-[#2f6b4f]/5"
+                >
+                  <FiLogIn className="h-4 w-4" />
+                  <span className="hidden sm:inline text-sm font-semibold">
+                    Sign In
+                  </span>
+                </Link>
+              )}
+
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setMobileOpen(true)}
+                aria-label="Open menu"
+                aria-expanded={mobileOpen}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-black/[0.07] bg-white text-[#1f2937] transition hover:border-[#2f6b4f]/20 hover:text-[#2f6b4f]"
+              >
+                <FiMenu className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Sidebar */}
+      <div
+        className={`fixed inset-0 z-[100] lg:hidden ${
+          mobileOpen ? "visible" : "invisible"
+        }`}
+      >
+        {/* Backdrop */}
+        <div
+          onClick={closeMobileMenu}
+          className={`
+            absolute inset-0 bg-[#1f2937]/40 backdrop-blur-sm
+            transition-opacity duration-300
+            ${mobileOpen ? "opacity-100" : "opacity-0"}
+          `}
+        />
+
+        {/* Sidebar */}
+        <aside
+          className={`
+            absolute left-0 top-0 flex h-full w-[320px] max-w-[88vw]
+            flex-col bg-[#f5f1eb]
+            shadow-2xl
+            transition-transform duration-300 ease-out
+            ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
+          `}
+        >
+          {/* Sidebar Header */}
+          <div className="flex items-center justify-between border-b border-black/[0.06] px-5 py-5">
+            <Link
+              href="/"
+              onClick={closeMobileMenu}
+              className="flex items-center gap-2.5"
+            >
+              <div className="relative flex h-9 w-9 items-center justify-center">
+                <div className="absolute inset-0 rotate-45 rounded-[10px] bg-[#2f6b4f]" />
+                <div className="relative h-4 w-4 rounded-[5px] bg-[#f5f1eb]" />
+              </div>
+
+              <span className="font-heading text-[16px] font-extrabold text-[#2f6b4f]">
+                Havenly Listing
+              </span>
+            </Link>
+
+            <button
+              onClick={closeMobileMenu}
+              aria-label="Close menu"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-black/[0.06] bg-white text-[#1f2937] transition hover:text-[#2f6b4f]"
+            >
+              <FiX className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <div className="flex-1 overflow-y-auto px-4 py-6">
+            <p className="mb-3 px-3 text-[11px] font-bold uppercase tracking-[0.14em] text-[#1f2937]/40">
+              Explore
+            </p>
+
+            <div className="space-y-1.5">
+              {navLinks.map((link) => {
+                const active = isActive(link.href);
+
+                return (
+                  <Link
+                    key={link.name}
+                    href={link.href}
+                    onClick={closeMobileMenu}
+                    className={`
+                      group flex items-center justify-between rounded-2xl
+                      px-3 py-3.5 transition-all duration-200
+                      ${
+                        active
+                          ? "bg-[#2f6b4f] text-white shadow-md shadow-[#2f6b4f]/10"
+                          : "text-[#1f2937]/75 hover:bg-white hover:text-[#2f6b4f]"
+                      }
+                    `}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`
+                          flex h-10 w-10 items-center justify-center rounded-xl
+                          ${
+                            active
+                              ? "bg-white/15 text-white"
+                              : "bg-white text-[#2f6b4f]"
+                          }
+                        `}
+                      >
+                        {link.icon}
+                      </div>
+
+                      <span className="text-sm font-semibold">{link.name}</span>
+                    </div>
+
+                    <FiChevronRight
+                      className={`h-4 w-4 transition-transform ${
+                        active
+                          ? "text-white/70"
+                          : "text-[#1f2937]/20 group-hover:translate-x-0.5"
+                      }`}
+                    />
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Authenticated User Section */}
+            {isLoaded && isSignedIn && (
+              <>
+                <div className="my-6 border-t border-black/[0.06]" />
+
+                <p className="mb-3 px-3 text-[11px] font-bold uppercase tracking-[0.14em] text-[#1f2937]/40">
+                  Account
+                </p>
+
+                {/* Dashboard */}
+                <Link
+                  href={dashboardHref}
+                  onClick={closeMobileMenu}
+                  className={`
+                    group flex items-center justify-between rounded-2xl
+                    px-3 py-3.5 transition-all duration-200
+                    ${
+                      pathname.startsWith(
+                        role === "owner"
+                          ? "/propertyowner/dashboard"
+                          : "/client/dashboard",
+                      )
+                        ? "bg-[#2f6b4f] text-white shadow-md shadow-[#2f6b4f]/10"
+                        : "text-[#1f2937]/75 hover:bg-white hover:text-[#2f6b4f]"
+                    }
+                  `}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white text-[#2f6b4f]">
+                      <FiUser className="h-[18px] w-[18px]" />
+                    </div>
+
+                    <div>
+                      <span className="block text-sm font-semibold">
+                        Dashboard
+                      </span>
+                      <span className="mt-0.5 block text-[11px] opacity-50">
+                        Manage your account
+                      </span>
+                    </div>
+                  </div>
+
+                  <FiChevronRight className="h-4 w-4 opacity-40" />
                 </Link>
               </>
             )}
           </div>
 
-          {/* Mobile Sign In / Out Button */}
-          {isSignedIn ? (
-            <button
-              onClick={handleSignOut}
-              className="lg:hidden group flex items-center space-x-2 px-4 py-2 rounded-full border border-gray-300 text-gray-700 font-medium transition-all duration-300 hover:border-primary-accent hover:text-primary-accent"
-            >
-              <FiLogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Sign Out</span>
-            </button>
-          ) : (
-            <Link
-              href={`/auth/signup${searchParams.get("redirect_url") ? `?redirect_url=${searchParams.get("redirect_url")}` : ""}`}
-              className="lg:hidden group flex items-center space-x-2 px-4 py-2 rounded-full border border-gray-300 text-gray-700 font-medium transition-all duration-300 hover:border-primary-accent hover:text-primary-accent"
-            >
-              <FiLogIn className="w-4 h-4" />
-              <span className="hidden sm:inline">Sign In</span>
-            </Link>
-          )}
-
-          {/* Toggle Button */}
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label="Toggle menu"
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-all duration-200"
-          >
-            <div className="relative w-6 h-6">
-              <span
-                className={`absolute top-0 left-0 w-6 h-0.5 bg-gray-800 transition-all duration-300 ${
-                  mobileOpen ? "rotate-45 top-2.5" : ""
-                }`}
-              ></span>
-              <span
-                className={`absolute top-2.5 left-0 w-6 h-0.5 bg-gray-800 transition-all duration-300 ${
-                  mobileOpen ? "opacity-0" : ""
-                }`}
-              ></span>
-              <span
-                className={`absolute bottom-0 left-0 w-6 h-0.5 bg-gray-800 transition-all duration-300 ${
-                  mobileOpen ? "-rotate-45 bottom-2.5" : ""
-                }`}
-              ></span>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      {/* Modern Mobile Menu with Glass Morphism */}
-      <div
-        className={`lg:hidden fixed inset-0 z-100 transition-all duration-500 ${
-          mobileOpen ? "opacity-100 visible" : "opacity-0 invisible"
-        }`}
-      >
-        {/* Backdrop */}
-        <div
-          className={`absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-500 ${
-            mobileOpen ? "opacity-100" : "opacity-0"
-          }`}
-          onClick={() => setMobileOpen(false)}
-        />
-
-        {/* Menu Panel */}
-        <div
-          className={`absolute left-0 top-0 h-full w-80 max-w-[85%] bg-white/95 backdrop-blur-xl shadow-2xl transition-transform duration-500 ${
-            mobileOpen ? "translate-x-0" : "-translate-x-full"
-          }`}
-        >
-          {/* Menu Header */}
-          <div className="p-6 border-b border-gray-100">
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center space-x-3">
-                <Link href="/" className="flex items-center space-x-2 group">
-                  <div className="relative">
-                    <div className="w-9 h-9 bg-linear-to-r from-primary-accent to-primary rounded-xl rotate-45 group-hover:rotate-90 transition-all duration-500"></div>
-                    <div className="absolute inset-2 bg-white rounded-md"></div>
-                  </div>
-                  <span className="text-md font-bold bg-linear-to-r from-primary-accent to-primary bg-clip-text text-transparent">
-                    Havenly Listing
-                  </span>
-                </Link>
-              </div>
-            </div>
+          {/* Sidebar Footer */}
+          <div className="border-t border-black/[0.06] p-5">
+            {!isLoaded ? null : isSignedIn ? (
+              <button
+                onClick={handleSignOut}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl border border-red-200 bg-white py-3.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+              >
+                <FiLogOut className="h-4 w-4" />
+                Sign Out
+              </button>
+            ) : (
+              <Link
+                href={signInHref}
+                onClick={closeMobileMenu}
+                className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#2f6b4f] py-3.5 text-sm font-semibold text-white transition hover:bg-[#25563f]"
+              >
+                <FiLogIn className="h-4 w-4" />
+                Sign In
+              </Link>
+            )}
           </div>
-
-          {/* Menu Items */}
-          <div className="p-6">
-            <ul className="space-y-2">
-              {navLinks.map((link) => (
-                <li key={link.name}>
-                  <Link
-                    href={link.href}
-                    className="flex items-center space-x-3 p-4 rounded-xl hover:bg-linear-to-r hover:from-emerald-50 hover:to-blue-50 transition-all duration-300 group"
-                    onClick={() => setMobileOpen(false)}
-                  >
-                    <div className="p-2 rounded-lg bg-gray-100 group-hover:bg-white transition-colors">
-                      {link.icon}
-                    </div>
-                    <span className="font-medium text-gray-700 group-hover:text-primary-accent">
-                      {link.name}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Menu Footer */}
-          {/* <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-gray-100">
-            <button
-              className="w-full py-3.5 px-6 rounded-full bg-linear-to-r from-primary-accent to-primary border text-white font-medium transition-all duration-600 hover:bg-none hover:border-primary hover:text-primary active:scale-95"
-              onClick={() => setMobileOpen(false)}
-            >
-              List Property
-            </button>
-          </div> */}
-        </div>
+        </aside>
       </div>
-    </nav>
+    </>
   );
 }
 
-// 👇 3. Add this new default export at the bottom
 export default function Navbar() {
   return (
     <Suspense fallback={null}>

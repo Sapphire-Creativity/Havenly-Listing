@@ -1,95 +1,109 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import SearchBar from "../components/SearchBar";
-import { useRouter } from "next/navigation";
 import PropertyCard from "../components/PropertyCard";
 import { supabase } from "../../../lib/supabase";
+import { searchProperties } from "../../../lib/searchProperties";
 
-const Buy = () => {
+const CATEGORIES = ["All", "Residential", "Commercial", "Luxury"];
+
+const BuyContent = () => {
   const [filter, setFilter] = useState("Residential");
   const [sort, setSort] = useState("latest");
   const [properties, setProperties] = useState([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const searchKey = searchParams.toString(); // changes whenever the search bar submits
 
   useEffect(() => {
+    let cancelled = false;
+
     const fetchProperties = async () => {
       setLoading(true);
-
-      let query = supabase
-        .from("properties")
-        .select("*")
-        .eq("status", "For Sale")
-        .eq("is_available", true)
-        .ilike("property_category", filter); // filter by category
-
-      // sorting
-      if (sort === "price-low") {
-        query = query.order("pricing->salePrice", { ascending: true });
-      } else if (sort === "price-high") {
-        query = query.order("pricing->salePrice", { ascending: false });
-      } else {
-        query = query.order("date_listed", { ascending: false }); // latest
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
+      try {
+        const sp = new URLSearchParams(searchKey);
+        const result = await searchProperties({
+          listingType: "buy",
+          category: filter === "All" ? "" : filter,
+          q: sp.get("q") || "",
+          propertyType: sp.get("ptype") || "",
+          minBeds: sp.get("beds") || "",
+          minPrice: sp.get("minPrice") || "",
+          maxPrice: sp.get("maxPrice") || "",
+          availableOnly: true,
+          sort,
+          pageSize: 60,
+        });
+        if (!cancelled) {
+          setProperties(result.properties);
+          setTotal(result.total);
+        }
+      } catch (error) {
         console.error("Error fetching properties:", error);
-      } else {
-        setProperties(data || []);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-
-      setLoading(false);
     };
 
     fetchProperties();
 
-    // ✅ REALTIME SUBSCRIPTION
+    // REALTIME SUBSCRIPTION
     const channel = supabase
-      .channel("properties-changes")
+      .channel("properties-changes-buy")
       .on(
         "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "properties",
-        },
-        () => {
-          fetchProperties();
-        },
+        { event: "*", schema: "public", table: "properties" },
+        () => fetchProperties(),
       )
       .subscribe();
 
-    // cleanup
     return () => {
+      cancelled = true;
       supabase.removeChannel(channel);
     };
-  }, [filter, sort]); // re-fetch when filter or sort changes
+  }, [filter, sort, searchKey]); // re-fetch when category, sort or search changes
 
   const handleCardClick = (property) => {
     if (!property || !property.id) return;
     router.push(`/buy/${property.id}`);
   };
 
+  const isSearching = searchKey !== "";
+
   return (
     <div className="w-full bg-[#fafafa]">
       {/* HERO */}
-      <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-black text-white">
-        <div className="max-w-8xl mx-auto p-6">
+      <section className="relative overflow-hidden text-white">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: "url('../assets/property.png')",
+          }}
+        />
+
+        {/* Brand Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1f4635]/90 via-[#2f6b4f]/85 to-[#2f6b4f]/20" />
+
+        <div className="relative z-10 max-w-8xl mx-auto">
           <div className="max-w-3xl space-y-4">
             <h1 className="text-3xl md:text-5xl font-bold leading-tight">
               Find Your Next Property With Confidence
             </h1>
-            <p className="text-gray-300 text-lg">
+
+            <p className="text-white/80 text-lg">
               Explore residential, commercial, and luxury properties curated for
               smart buyers.
             </p>
           </div>
-          <div className="mt-10 bg-white rounded-2xl shadow-xl p-4">
-            <SearchBar />
+
+          <div className="mt-10">
+            <SearchBar listingType="buy" onDark />
           </div>
         </div>
       </section>
@@ -97,8 +111,8 @@ const Buy = () => {
       {/* FILTER BAR */}
       <div className="sticky top-0 z-30 bg-white border-b">
         <div className="max-w-8xl mx-auto px-6 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex gap-2 bg-gray-100 p-2 rounded-full w-fit">
-            {["Residential", "Commercial", "Luxury"].map((cat) => (
+          <div className="flex flex-wrap gap-2 bg-gray-100 p-2 rounded-full w-fit">
+            {CATEGORIES.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setFilter(cat)}
@@ -117,7 +131,7 @@ const Buy = () => {
           <div className="flex items-center gap-4">
             <p className="text-sm text-gray-500">
               <span className="font-semibold text-black">
-                {loading ? "..." : properties.length}
+                {loading ? "..." : total}
               </span>{" "}
               properties found
             </p>
@@ -140,10 +154,12 @@ const Buy = () => {
         <div className="mb-10 flex items-end justify-between">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold">
-              {filter} Properties for Sale
+              {filter === "All" ? "All" : filter} Properties for Sale
             </h2>
             <p className="text-gray-500 mt-1">
-              Handpicked listings updated regularly
+              {isSearching
+                ? "Results for your search"
+                : "Handpicked listings updated regularly"}
             </p>
           </div>
         </div>
@@ -175,8 +191,18 @@ const Buy = () => {
             ) : (
               <div className="col-span-full text-center py-20">
                 <p className="text-gray-500 text-lg">
-                  No properties found in this category.
+                  {isSearching
+                    ? "No properties match your search."
+                    : "No properties found in this category."}
                 </p>
+                {isSearching && filter !== "All" && (
+                  <button
+                    onClick={() => setFilter("All")}
+                    className="mt-3 text-primary underline underline-offset-4"
+                  >
+                    Search all categories
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -185,5 +211,12 @@ const Buy = () => {
     </div>
   );
 };
+
+// useSearchParams needs a Suspense boundary or `next build` fails
+const Buy = () => (
+  <Suspense fallback={null}>
+    <BuyContent />
+  </Suspense>
+);
 
 export default Buy;

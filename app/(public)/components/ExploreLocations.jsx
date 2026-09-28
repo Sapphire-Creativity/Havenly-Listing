@@ -2,133 +2,172 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { FiArrowUpRight, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { useEffect, useRef, useState } from "react";
+import { FiArrowUpRight, FiMapPin } from "react-icons/fi";
 import { FEATURED_LOCATIONS } from "../../../public/assets/data";
 
+const TILE_LAYOUT = [
+  "md:col-span-2 lg:row-span-2", // 0: big
+  "", //                            1
+  "lg:row-span-2", //               2: tall
+  "", //                            3
+  "lg:col-span-2", //               4: wide
+  "", //                            5
+  "", //                            6
+];
+
+const WIDE_TILES = new Set([0, 4]);
+const EASE = "ease-[cubic-bezier(0.22,1,0.36,1)]";
+
 export default function ExploreLocations() {
-  const scrollRef = useRef(null);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const wrapperRef = useRef(null);
+  const [visible, setVisible] = useState(false);
 
-  const scrollTo = (index) => {
-    const container = scrollRef.current;
-    const card = container.children[index];
-    card.scrollIntoView({ behavior: "smooth", inline: "center" });
-    setActiveIndex(index);
-  };
+  // Trigger the reveal animation once, when the section scrolls into view
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
 
-  const scrollBy = (direction) => {
-    scrollRef.current.scrollBy({
-      left: direction === "left" ? -350 : 350,
-      behavior: "smooth",
-    });
-  };
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.12 },
+    );
+
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const locations = FEATURED_LOCATIONS.slice(0, TILE_LAYOUT.length);
 
   return (
-    <section className="mx-auto px-4 py-20">
-      {/* Header */}
-      <div className="mb-10 flex items-end justify-between">
-        <div>
-          <h2 className="text-3xl md:text-4xl font-semibold text-gray-900">
-            Explore Properties Across Nigeria
-          </h2>
-          <p className="text-gray-600 mt-2 max-w-xl">
-            Browse private residences, shortlets, and commercial properties by
-            state.
-          </p>
+    <section>
+      <div ref={wrapperRef} className="mx-auto max-w-7xl">
+        {/* Header */}
+        <div
+          className={`mb-10 flex flex-col gap-6 transition-[opacity,transform] duration-700 ${EASE} motion-reduce:transition-none md:mb-14 md:flex-row md:items-end md:justify-between ${
+            visible ? "translate-y-0 opacity-100" : "translate-y-6 opacity-0"
+          }`}
+        >
+          <div className="max-w-5xl">
+            <span className="inline-flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              <span className="h-px w-10 bg-primary" />
+              Locations
+            </span>
+            <h2 className="mt-4 text-3xl tracking-tight text-foreground md:text-4xl ">
+              Explore Properties Across Nigeria
+            </h2>
+            <p className="mt-3 text-base text-muted">
+              Browse private residences, shortlets, and commercial properties by
+              state.
+            </p>
+          </div>
+
+           
         </div>
 
-        {/* Arrows (Desktop) */}
-        <div className="hidden md:flex gap-3">
-          <button
-            onClick={() => scrollBy("left")}
-            className="p-2 rounded-full border border-primary color-primary hover:bg-white transition"
-          >
-            <FiChevronLeft size={20} />
-          </button>
-          <button
-            onClick={() => scrollBy("right")}
-            className="p-2 rounded-full border border-primary color-primary hover:bg-white transition"
-          >
-            <FiChevronRight size={20} />
-          </button>
+        {/* Bento grid */}
+        <div className="grid grid-flow-dense auto-rows-[280px] grid-cols-1 gap-4 md:auto-rows-[260px] md:grid-cols-2 md:gap-5 lg:auto-rows-[250px] lg:grid-cols-4">
+          {locations.map((location, index) => {
+            const isWide = WIDE_TILES.has(index);
+            const isBig = index === 0;
+
+            return (
+               
+              <div
+                key={location.slug}
+                className={`${TILE_LAYOUT[index]} transition-[opacity,transform] duration-700 ${EASE} motion-reduce:transition-none ${
+                  visible
+                    ? "translate-y-0 opacity-100"
+                    : "translate-y-8 opacity-0"
+                }`}
+                style={{ transitionDelay: visible ? `${index * 90}ms` : "0ms" }}
+              >
+                <Link
+                  href="#"
+                  aria-label={`Browse properties in ${location.name}, ${location.state}`}
+                  className="group relative block h-full overflow-hidden rounded-3xl bg-border shadow-sm ring-1 ring-black/5 transition-[transform,box-shadow] duration-500 hover:-translate-y-1 hover:shadow-2xl focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-primary motion-reduce:transition-none motion-reduce:hover:translate-y-0"
+                >
+                  {/* Image */}
+                  <Image
+                    src={location.image}
+                    alt={location.name}
+                    fill
+                    sizes={
+                      isWide
+                        ? "(min-width: 1024px) 50vw, 100vw"
+                        : "(min-width: 1024px) 25vw, (min-width: 768px) 50vw, 100vw"
+                    }
+                    className={`object-cover transition-transform duration-[900ms] ${EASE} group-hover:scale-[1.07] motion-reduce:transition-none motion-reduce:group-hover:scale-100`}
+                  />
+
+                  {/* Dark gradient for text legibility */}
+                  <div className="absolute inset-0 bg-linear-to-t from-black/80 via-black/25 to-black/5" />
+
+                  {/* Forest-green tint that fades in on hover */}
+                  <div className="absolute inset-0 bg-primary/0 transition-colors duration-500 group-hover:bg-primary/25" />
+
+                  {/* Top row: tag + arrow */}
+                  <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4 md:p-5">
+                    {location.tag ? (
+                      <span className="rounded-full bg-white/90 px-3 py-1 text-xs font-medium text-foreground backdrop-blur-md">
+                        {location.tag}
+                      </span>
+                    ) : (
+                      <span />
+                    )}
+
+                    <span className="flex size-10 items-center justify-center rounded-full bg-white/90 text-foreground backdrop-blur-md transition-colors duration-500 group-hover:bg-primary group-hover:text-white">
+                      <FiArrowUpRight
+                        size={18}
+                        className="transition-transform duration-500 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                      />
+                    </span>
+                  </div>
+
+                  {/* Bottom content */}
+                  <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
+                    <h3
+                      className={`font-heading font-bold leading-tight text-white ${
+                        isBig ? "text-3xl md:text-4xl" : "text-xl"
+                      }`}
+                    >
+                      {location.name}
+                    </h3>
+
+                    <div className="mt-1.5 flex items-center gap-2 text-sm text-white/80">
+                      <FiMapPin size={14} className="shrink-0" />
+                      <span>{location.state}</span>
+                      <span className="size-1 rounded-full bg-white/50" />
+                      <span>{location.propertyCount}+ listings</span>
+                    </div>
+
+                    {/* Categories: always visible on mobile,
+                        slide open on hover for desktop */}
+                    <div className="grid grid-rows-[1fr] opacity-100 transition-[grid-template-rows,opacity] duration-500 lg:grid-rows-[0fr] lg:opacity-0 lg:group-hover:grid-rows-[1fr] lg:group-hover:opacity-100 lg:group-focus-visible:grid-rows-[1fr] lg:group-focus-visible:opacity-100">
+                      <div className="overflow-hidden">
+                        <div className="flex flex-wrap gap-2 pt-3">
+                          {location.categories.slice(0, 3).map((cat) => (
+                            <span
+                              key={cat}
+                              className="rounded-full border border-white/25 bg-white/15 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur-md"
+                            >
+                              {cat}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </div>
+            );
+          })}
         </div>
-      </div>
-
-      {/* Horizontal Masonry */}
-      <div
-        ref={scrollRef}
-        className="flex gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4"
-      >
-        {FEATURED_LOCATIONS.map((location, index) => (
-          <Link
-            key={location.slug}
-            href={`/listings?location=${location.slug}`}
-            onMouseEnter={() => setActiveIndex(index)}
-            className="group relative min-w-[280px] h-[420px] snap-center rounded-3xl overflow-hidden bg-gray-200 shadow-sm hover:shadow-xl transition"
-          >
-            {/* Image */}
-            <Image
-              src={location.image}
-              alt={location.name}
-              fill
-              className="object-cover transition-transform duration-700 group-hover:scale-110"
-            />
-
-            {/* Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-
-            {/* Tag */}
-            {location.tag && (
-              <span className="absolute top-4 left-4 z-10 text-xs bg-white/90 text-gray-900 px-3 py-1 rounded-full backdrop-blur">
-                {location.tag}
-              </span>
-            )}
-
-            {/* Content */}
-            <div className="absolute bottom-5 left-5 right-5">
-              <h3 className="text-white text-xl font-semibold">
-                {location.name}
-              </h3>
-              <p className="text-white/80 text-sm">{location.state}</p>
-
-              {/* Categories */}
-              <div className="flex flex-wrap gap-2 mt-3">
-                {location.categories.map((cat) => (
-                  <span
-                    key={cat}
-                    className="text-[11px] px-2 py-1 rounded-full bg-primary-accent text-white backdrop-blur"
-                  >
-                    {cat}
-                  </span>
-                ))}
-              </div>
-
-              {/* Footer */}
-              <div className="flex items-center justify-between mt-4 opacity-0 group-hover:opacity-100 transition">
-                <span className="text-sm text-white/90">
-                  {location.propertyCount}+ listings
-                </span>
-                <FiArrowUpRight className="text-white text-lg" />
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
-
-      {/* Navigation Dots */}
-      <div className="flex justify-center gap-2 mt-6">
-        {FEATURED_LOCATIONS.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => scrollTo(index)}
-            className={`h-2.5 rounded-full transition-all ${
-              activeIndex === index
-                ? "w-6 bg-primary-accent"
-                : "w-2.5 bg-gray-300 hover:bg-gray-400"
-            }`}
-          />
-        ))}
       </div>
     </section>
   );

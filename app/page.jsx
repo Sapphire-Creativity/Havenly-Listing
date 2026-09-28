@@ -12,14 +12,14 @@ const page = () => {
   return (
     <>
       {/* content */}
-       <Navbar />
-      <Hero />    
+      <Navbar />
+      <Hero />
 
       <ExploreLocations />
       <TrendingSection />
       <GeometricMapUI />
       <ListPropertyCTA />
-      <Footer/>
+      <Footer />
     </>
   );
 };

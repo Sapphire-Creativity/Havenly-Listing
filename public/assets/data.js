@@ -1,4 +1,10 @@
-import imageOne from "./lagos.jpg";
+import lagos from "./lagos.png";
+import abuja from "./abuja.png";
+import owerri from "./owerri.png";
+import oyo from "./oyo.png";
+import uyo from "./uyo.png";
+import portharcourt from "./portharcourt.png";
+import enugu from "./enugu.png";
 
 export const FEATURED_LOCATIONS = [
   {
@@ -10,7 +16,7 @@ export const FEATURED_LOCATIONS = [
     priority: 1,
     propertyCount: 2450,
     categories: ["Residential", "Commercial", "Shortlet"],
-    image: imageOne,
+    image: lagos,
   },
   {
     name: "Abuja",
@@ -21,7 +27,7 @@ export const FEATURED_LOCATIONS = [
     priority: 2,
     propertyCount: 1320,
     categories: ["Residential", "Commercial"],
-    image: imageOne,
+    image: abuja,
   },
   {
     name: "Port Harcourt",
@@ -31,7 +37,7 @@ export const FEATURED_LOCATIONS = [
     tag: "Oil & Business Hub",
     propertyCount: 780,
     categories: ["Commercial", "Residential"],
-    image: imageOne,
+    image: portharcourt,
   },
   {
     name: "Ibadan",
@@ -41,7 +47,7 @@ export const FEATURED_LOCATIONS = [
     tag: "Affordable Homes",
     propertyCount: 640,
     categories: ["Residential"],
-    image: imageOne,
+    image: oyo,
   },
   {
     name: "Enugu",
@@ -51,7 +57,7 @@ export const FEATURED_LOCATIONS = [
     tag: "Serene Living",
     propertyCount: 420,
     categories: ["Residential", "Shortlet"],
-    image: imageOne,
+    image: enugu,
   },
   {
     name: "Owerri",
@@ -61,7 +67,7 @@ export const FEATURED_LOCATIONS = [
     tag: "Shortlet Hotspot",
     propertyCount: 310,
     categories: ["Shortlet", "Residential"],
-    image: imageOne,
+    image: owerri,
   },
   {
     name: "Uyo",
@@ -71,7 +77,7 @@ export const FEATURED_LOCATIONS = [
     tag: "Tourist Favorite",
     propertyCount: 280,
     categories: ["Shortlet", "Residential"],
-    image: imageOne,
+    image: uyo,
   },
 ];
 

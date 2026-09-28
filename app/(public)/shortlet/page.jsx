@@ -1,94 +1,126 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import PropertyCard from "../components/PropertyCard";
 import SearchBar from "../components/SearchBar";
-import { useRouter } from "next/navigation";
 import { supabase } from "../../../lib/supabase";
+import { searchProperties } from "../../../lib/searchProperties";
 
-const Shortlet = () => {
-  const [filter, setFilter] = useState("Apartment");
+const ShortletContent = () => {
+  const [filter, setFilter] = useState("All");
   const [sort, setSort] = useState("latest");
   const [properties, setProperties] = useState([]);
+  const [total, setTotal] = useState(0);
   const [propertyTypes, setPropertyTypes] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const searchKey = searchParams.toString();
 
-  // Fetch unique property types for filter buttons
+  // Unique property types for the tabs
   useEffect(() => {
     const fetchPropertyTypes = async () => {
       const { data } = await supabase
         .from("properties")
         .select("property_type")
-        .eq("status", "For Shortlet");
+        .eq("status", "For Shortlet")
+        .eq("is_available", true);
 
       if (data) {
-        // get unique property types
-        const unique = [...new Set(data.map((p) => p.property_type))].filter(Boolean);
-        setPropertyTypes(unique);
-        // set first type as default filter
-        if (unique.length > 0) setFilter(unique[0]);
+        setPropertyTypes(
+          [...new Set(data.map((p) => p.property_type))].filter(Boolean),
+        );
       }
     };
-
     fetchPropertyTypes();
   }, []);
 
-  // Fetch properties when filter or sort changes
+  // Fetch properties when tab, sort or search changes
   useEffect(() => {
+    let cancelled = false;
+
     const fetchProperties = async () => {
       setLoading(true);
-
-      let query = supabase
-        .from("properties")
-        .select("*")
-        .eq("status", "For Shortlet")
-        .eq("is_available", true)
-        .ilike("property_type", filter);
-
-      if (sort === "price-low") {
-        query = query.order("pricing->nightlyRate", { ascending: true });
-      } else if (sort === "price-high") {
-        query = query.order("pricing->nightlyRate", { ascending: false });
-      } else {
-        query = query.order("date_listed", { ascending: false });
+      try {
+        const sp = new URLSearchParams(searchKey);
+        const result = await searchProperties({
+          listingType: "shortlet",
+          propertyTypeExact: filter === "All" ? "" : filter,
+          q: sp.get("q") || "",
+          minGuests: sp.get("guests") || "",
+          minPrice: sp.get("minPrice") || "",
+          maxPrice: sp.get("maxPrice") || "",
+          availableOnly: true,
+          sort,
+          pageSize: 60,
+        });
+        if (!cancelled) {
+          setProperties(result.properties);
+          setTotal(result.total);
+        }
+      } catch (error) {
+        console.error("Error fetching properties:", error.message);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
-
-      const { data, error } = await query;
-
-      if (error) {
-        console.error("Error fetching properties:", error);
-      } else {
-        setProperties(data || []);
-      }
-
-      setLoading(false);
     };
 
-    if (filter) fetchProperties();
-  }, [filter, sort]);
+    fetchProperties();
+
+    const channel = supabase
+      .channel("properties-changes-shortlet")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "properties" },
+        () => fetchProperties(),
+      )
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+    };
+  }, [filter, sort, searchKey]);
 
   const handleCardClick = (property) => {
     if (!property || !property.id) return;
     router.push(`/shortlet/${property.id}`);
   };
 
+  const isSearching = searchKey !== "";
+  const tabs = ["All", ...propertyTypes];
+
   return (
     <div className="w-full bg-[#fafafa]">
       {/* HERO */}
-      <section className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-black text-white">
-        <div className="max-w-8xl mx-auto p-6">
+      <section className="relative overflow-hidden text-white">
+        {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{
+            backgroundImage: "url('../assets/apartment.png')",
+          }}
+        />
+
+        {/* Brand Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1f4635]/90 via-[#2f6b4f]/85 to-[#2f6b4f]/20" />
+
+        <div className="relative z-10 max-w-8xl mx-auto">
           <div className="max-w-3xl space-y-4">
             <h1 className="text-3xl md:text-5xl font-bold leading-tight">
-              Find Your Shortlet Stay With Confidence
+              Find Your Next Property With Confidence
             </h1>
-            <p className="text-gray-300 text-lg">
-              Explore shortlet properties curated for you.
+
+            <p className="text-white/80 text-lg">
+              Explore residential, commercial, and luxury properties curated for
+              smart buyers.
             </p>
           </div>
-          <div className="mt-10 bg-white rounded-2xl shadow-xl p-4">
-            <SearchBar />
+
+          <div className="mt-10">
+            <SearchBar listingType="buy" onDark />
           </div>
         </div>
       </section>
@@ -96,8 +128,8 @@ const Shortlet = () => {
       {/* FILTER BAR */}
       <div className="sticky top-0 z-30 bg-white border-b">
         <div className="max-w-8xl mx-auto px-6 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide bg-gray-100 p-2 rounded-full w-fit">
-            {propertyTypes.map((type) => (
+          <div className="flex gap-2 overflow-x-auto scrollbar-hide bg-gray-100 p-2 rounded-full w-fit max-w-full">
+            {tabs.map((type) => (
               <button
                 key={type}
                 onClick={() => setFilter(type)}
@@ -116,7 +148,7 @@ const Shortlet = () => {
           <div className="flex items-center gap-4">
             <p className="text-sm text-gray-500">
               <span className="font-semibold text-black">
-                {loading ? "..." : properties.length}
+                {loading ? "..." : total}
               </span>{" "}
               properties found
             </p>
@@ -139,15 +171,16 @@ const Shortlet = () => {
         <div className="mb-10 flex items-end justify-between">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold">
-              {filter} Properties
+              {filter === "All" ? "All Shortlet" : filter} Properties
             </h2>
             <p className="text-gray-500 mt-1">
-              Handpicked listings updated regularly
+              {isSearching
+                ? "Results for your search"
+                : "Handpicked listings updated regularly"}
             </p>
           </div>
         </div>
 
-        {/* Loading Skeleton */}
         {loading && (
           <div className="grid gap-4 grid-cols-1 2xl:grid-cols-2 3xl:grid-cols-3">
             {[...Array(4)].map((_, i) => (
@@ -159,7 +192,6 @@ const Shortlet = () => {
           </div>
         )}
 
-        {/* Properties */}
         {!loading && (
           <div className="grid gap-4 grid-cols-1 2xl:grid-cols-2 3xl:grid-cols-3">
             {properties.length > 0 ? (
@@ -174,8 +206,18 @@ const Shortlet = () => {
             ) : (
               <div className="col-span-full text-center py-20">
                 <p className="text-gray-500 text-lg">
-                  No properties found in this category.
+                  {isSearching
+                    ? "No properties match your search."
+                    : "No properties found in this category."}
                 </p>
+                {isSearching && filter !== "All" && (
+                  <button
+                    onClick={() => setFilter("All")}
+                    className="mt-3 text-primary underline underline-offset-4"
+                  >
+                    Search all types
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -184,5 +226,12 @@ const Shortlet = () => {
     </div>
   );
 };
+
+// useSearchParams needs a Suspense boundary or `next build` fails
+const Shortlet = () => (
+  <Suspense fallback={null}>
+    <ShortletContent />
+  </Suspense>
+);
 
 export default Shortlet;

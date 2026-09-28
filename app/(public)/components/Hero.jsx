@@ -109,27 +109,7 @@ export default function Hero() {
       {/*  */}
 
       
-      <div className="lg:w-1/2 mt-12 lg:mt-0">
-        <div className="bg-white/10 backdrop-blur-lg rounded-full p-3 md:p-8 border border-white/20 shadow-2xl">
-          {/* Property Type Filter */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {["Buy", "Rent", "Shortlet", "Commercial"].map((type) => (
-              <button
-                key={type}
-                type="button"
-                onClick={() => setPropertyType(type.toLowerCase())}
-                className={`px-4 py-3 rounded-full text-xs font-medium transition-all ${
-                  propertyType === type.toLowerCase()
-                    ? "bg-primary-accent text-white"
-                    : "bg-white/5 text-gray-300 hover:bg-white/10"
-                }`}
-              >
-                {type}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      v
     </section>
   );
 }

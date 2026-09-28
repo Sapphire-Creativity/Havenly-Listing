@@ -50,7 +50,6 @@ const ViewingInspectionModal = ({ isOpen, onClose, propertyDetails }) => {
     setError("");
 
     const inquiry = {
-      // id: `inq-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       property_id: propertyDetails.id,
       owner_id: propertyDetails.owner_id,
       // if user is logged in use their id, otherwise null
@@ -102,9 +101,16 @@ const ViewingInspectionModal = ({ isOpen, onClose, propertyDetails }) => {
   const today = new Date().toISOString().split("T")[0];
 
   const timeSlots = [
-    "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
-    "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM",
-    "05:00 PM", "06:00 PM",
+    "09:00 AM",
+    "10:00 AM",
+    "11:00 AM",
+    "12:00 PM",
+    "01:00 PM",
+    "02:00 PM",
+    "03:00 PM",
+    "04:00 PM",
+    "05:00 PM",
+    "06:00 PM",
   ];
 
   const stepLabels = ["Select Date", "Your Info", "Confirm"];
@@ -154,7 +160,9 @@ const ViewingInspectionModal = ({ isOpen, onClose, propertyDetails }) => {
             {/* Header */}
             <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between z-10">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">Schedule Viewing</h2>
+                <h2 className="text-xl font-bold text-gray-900">
+                  Schedule Viewing
+                </h2>
                 <p className="text-xs text-gray-400 mt-0.5">Step {step} of 3</p>
               </div>
               <button
@@ -182,9 +190,12 @@ const ViewingInspectionModal = ({ isOpen, onClose, propertyDetails }) => {
                   >
                     <IoCheckmarkCircle className="w-10 h-10 text-green-600" />
                   </motion.div>
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Request Sent!</h3>
+                  <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                    Request Sent!
+                  </h3>
                   <p className="text-gray-500 leading-relaxed">
-                    Your viewing request has been sent to the property owner. They will contact you shortly to confirm.
+                    Your viewing request has been sent to the property owner.
+                    They will contact you shortly to confirm.
                   </p>
                   <div className="mt-6 px-5 py-3 bg-green-50 rounded-xl text-sm text-green-700 font-medium">
                     📅 {formData.date} at {formData.time}
@@ -204,18 +215,26 @@ const ViewingInspectionModal = ({ isOpen, onClose, propertyDetails }) => {
                           step > i
                             ? "bg-green-500 text-white"
                             : step === i
-                            ? "bg-primary text-white ring-4 ring-primary/20"
-                            : "bg-gray-100 text-gray-400"
+                              ? "bg-primary text-white ring-4 ring-primary/20"
+                              : "bg-gray-100 text-gray-400"
                         }`}
                       >
-                        {step > i ? <IoCheckmarkCircle className="w-4 h-4" /> : i}
+                        {step > i ? (
+                          <IoCheckmarkCircle className="w-4 h-4" />
+                        ) : (
+                          i
+                        )}
                       </div>
-                      <span className={`text-xs mt-1 font-medium ${step >= i ? "text-primary" : "text-gray-400"}`}>
+                      <span
+                        className={`text-xs mt-1 font-medium ${step >= i ? "text-primary" : "text-gray-400"}`}
+                      >
                         {stepLabels[i - 1]}
                       </span>
                     </div>
                     {i < 3 && (
-                      <div className={`flex-1 h-0.5 mx-2 mb-4 rounded transition-colors ${step > i ? "bg-green-500" : "bg-gray-200"}`} />
+                      <div
+                        className={`flex-1 h-0.5 mx-2 mb-4 rounded transition-colors ${step > i ? "bg-green-500" : "bg-gray-200"}`}
+                      />
                     )}
                   </div>
                 ))}
@@ -246,22 +265,27 @@ const ViewingInspectionModal = ({ isOpen, onClose, propertyDetails }) => {
                   </div>
                   <div className="flex items-center gap-1 mt-1 text-xs text-gray-500">
                     <IoLocationOutline className="w-3 h-3 flex-shrink-0" />
-                    <span className="truncate">{propertyDetails.location}, {propertyDetails.state}</span>
+                    <span className="truncate">
+                      {propertyDetails.location}, {propertyDetails.state}
+                    </span>
                   </div>
                   <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
                     {propertyDetails.beds > 0 && (
                       <span className="flex items-center gap-1">
-                        <IoBedOutline className="w-3 h-3" /> {propertyDetails.beds}
+                        <IoBedOutline className="w-3 h-3" />{" "}
+                        {propertyDetails.beds}
                       </span>
                     )}
                     {propertyDetails.baths > 0 && (
                       <span className="flex items-center gap-1">
-                        <IoWaterOutline className="w-3 h-3" /> {propertyDetails.baths}
+                        <IoWaterOutline className="w-3 h-3" />{" "}
+                        {propertyDetails.baths}
                       </span>
                     )}
                     {propertyDetails.square_meters && ( // ✅ fixed
                       <span className="flex items-center gap-1">
-                        <IoResizeOutline className="w-3 h-3" /> {propertyDetails.square_meters}m²
+                        <IoResizeOutline className="w-3 h-3" />{" "}
+                        {propertyDetails.square_meters}m²
                       </span>
                     )}
                   </div>
@@ -305,7 +329,9 @@ const ViewingInspectionModal = ({ isOpen, onClose, propertyDetails }) => {
                           <button
                             key={time}
                             type="button"
-                            onClick={() => setFormData((prev) => ({ ...prev, time }))}
+                            onClick={() =>
+                              setFormData((prev) => ({ ...prev, time }))
+                            }
                             className={`py-2.5 px-3 rounded-xl text-sm font-medium border transition-all ${
                               formData.time === time
                                 ? "bg-primary text-white border-primary shadow-sm"
@@ -328,7 +354,12 @@ const ViewingInspectionModal = ({ isOpen, onClose, propertyDetails }) => {
                           <button
                             key={num}
                             type="button"
-                            onClick={() => setFormData((prev) => ({ ...prev, attendees: String(num) }))}
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                attendees: String(num),
+                              }))
+                            }
                             className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
                               formData.attendees === String(num)
                                 ? "bg-primary text-white border-primary"
@@ -401,7 +432,9 @@ const ViewingInspectionModal = ({ isOpen, onClose, propertyDetails }) => {
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Additional Message
-                        <span className="text-gray-400 font-normal ml-1">(Optional)</span>
+                        <span className="text-gray-400 font-normal ml-1">
+                          (Optional)
+                        </span>
                       </label>
                       <textarea
                         name="message"
@@ -422,59 +455,81 @@ const ViewingInspectionModal = ({ isOpen, onClose, propertyDetails }) => {
                     animate={{ opacity: 1, x: 0 }}
                     className="space-y-4"
                   >
-                    <h3 className="font-semibold text-gray-800">Review Your Details</h3>
+                    <h3 className="font-semibold text-gray-800">
+                      Review Your Details
+                    </h3>
 
                     {/* Date & Time Card */}
                     <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 space-y-2">
-                      <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-3">Viewing Schedule</p>
+                      <p className="text-xs font-semibold text-primary uppercase tracking-wide mb-3">
+                        Viewing Schedule
+                      </p>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500 flex items-center gap-1.5">
                           <IoCalendarOutline className="w-4 h-4" /> Date
                         </span>
-                        <span className="font-semibold text-gray-800">{formData.date || "Not selected"}</span>
+                        <span className="font-semibold text-gray-800">
+                          {formData.date || "Not selected"}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500 flex items-center gap-1.5">
                           <IoTimeOutline className="w-4 h-4" /> Time
                         </span>
-                        <span className="font-semibold text-gray-800">{formData.time || "Not selected"}</span>
+                        <span className="font-semibold text-gray-800">
+                          {formData.time || "Not selected"}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500 flex items-center gap-1.5">
                           <IoPeopleOutline className="w-4 h-4" /> Attendees
                         </span>
-                        <span className="font-semibold text-gray-800">{formData.attendees}</span>
+                        <span className="font-semibold text-gray-800">
+                          {formData.attendees}
+                        </span>
                       </div>
                     </div>
 
                     {/* Personal Info Card */}
                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 space-y-2">
-                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Contact Details</p>
+                      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                        Contact Details
+                      </p>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500 flex items-center gap-1.5">
                           <IoPersonOutline className="w-4 h-4" /> Name
                         </span>
-                        <span className="font-semibold text-gray-800">{formData.name || "Not provided"}</span>
+                        <span className="font-semibold text-gray-800">
+                          {formData.name || "Not provided"}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500 flex items-center gap-1.5">
                           <IoMailOutline className="w-4 h-4" /> Email
                         </span>
-                        <span className="font-semibold text-gray-800 text-right max-w-[180px] truncate">{formData.email || "Not provided"}</span>
+                        <span className="font-semibold text-gray-800 text-right max-w-[180px] truncate">
+                          {formData.email || "Not provided"}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-gray-500 flex items-center gap-1.5">
                           <IoCallOutline className="w-4 h-4" /> Phone
                         </span>
-                        <span className="font-semibold text-gray-800">{formData.phone || "Not provided"}</span>
+                        <span className="font-semibold text-gray-800">
+                          {formData.phone || "Not provided"}
+                        </span>
                       </div>
                     </div>
 
                     {/* Message */}
                     {formData.message && (
                       <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Message</p>
-                        <p className="text-sm text-gray-700">{formData.message}</p>
+                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">
+                          Message
+                        </p>
+                        <p className="text-sm text-gray-700">
+                          {formData.message}
+                        </p>
                       </div>
                     )}
 
@@ -487,7 +542,9 @@ const ViewingInspectionModal = ({ isOpen, onClose, propertyDetails }) => {
 
                     <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
                       <p className="text-xs text-yellow-800 leading-relaxed">
-                        By submitting this request, you agree to our terms and conditions. The property owner will confirm the viewing availability within 24 hours.
+                        By submitting this request, you agree to our terms and
+                        conditions. The property owner will confirm the viewing
+                        availability within 24 hours.
                       </p>
                     </div>
                   </motion.div>
@@ -529,9 +586,24 @@ const ViewingInspectionModal = ({ isOpen, onClose, propertyDetails }) => {
                   >
                     {isSubmitting ? (
                       <>
-                        <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                        <svg
+                          className="animate-spin w-4 h-4"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          />
                         </svg>
                         Sending...
                       </>
